@@ -1,0 +1,139 @@
+{
+  "generated": "2026-09-08T00:00:00Z",
+  "repository": "JARVIS 2.0",
+  "baseline_commit": "27c879b",
+  "artifacts": {
+    "neural_core/data/model.pkl": {
+      "sha256": "1e6a38cdb19b3a01db5d327e7e107f8c429082aac50cb76be433fe0839a8b4a2",
+      "size_bytes": 21905337
+    },
+    "neural_core/data/training_state.pkl": {
+      "sha256": "b450729be223b1883f6fb3f0b7e0f4d4afce131f1492ebf3be1d15bc43f3c886",
+      "size_bytes": 59461188
+    },
+    "neural_core/data/tokenizer.pkl": {
+      "sha256": "a1bcedb26d356e55aae01427927f8d8f8524f08faf1770d3c441d98f1a474711",
+      "size_bytes": 176208
+    },
+    "neural_core/data/tokenizer.json": {
+      "sha256": "0de73c1d25d874ef53ff25404d8593d47831e09cd2c87559498c1406bd0fa840",
+      "size_bytes": 176335
+    },
+    "neural_core/data/best_model.json": {
+      "sha256": "45f597f51a2f95997e798d525c4598242d347375f1fbce67cffd76134a8a5990",
+      "size_bytes": 53422365
+    },
+    "neural_core/data/baseline_model.pkl": {
+      "sha256": "NOT_FOUND",
+      "size_bytes": 0
+    },
+    "neural_core/data/baseline_manifest.json": {
+      "sha256": "62f85b6110dacefe911c9d99bf46e90353c17d8639e91263d71b969f247d364a",
+      "size_bytes": 927
+    },
+    "neural_core/data/baseline_benchmark.json": {
+      "sha256": "a2fe567344676288bde8eb16f85e9f69c646135353c8de24f7c7cbf484e7f76c",
+      "size_bytes": 178
+    },
+    "neural_core/data/provenance_manifest.json": {
+      "sha256": "99e54e1af009f698034692d824169f4ae5843491dab2ecb93fa8b235d6c26042",
+      "size_bytes": 4902
+    },
+    "neural_core/data/provenance_sentences.jsonl": {
+      "sha256": "e97cc96907ee8af3c95dd6fc8826954e753e2cd2f0e08d17ac2ca6b4253104fe",
+      "size_bytes": 12873914
+    },
+    "neural_core/data/full_corpus.txt": {
+      "sha256": "a03fd7166e766c4dbe65a7a10591a80c96997ce965a5c172734bb3ad6ae8eecd",
+      "size_bytes": 33428159
+    },
+    "neural_core/data/cleaned_literature.txt": {
+      "sha256": "9f27ca0d2b9e4e4e24fb415580c7861ec92e171b07cebeebf7f7080b67f7154c",
+      "size_bytes": 5681732
+    },
+    "neural_core/data/train.txt": {
+      "sha256": "c720569ac64c36681e2a47a9aa1fe29bf318f78aab448686a593115a2e9976dd",
+      "size_bytes": 4952699
+    },
+    "neural_core/data/validation.txt": {
+      "sha256": "5596314110d67a5a6f079998f72dac0f3dfdcc70d55cc48e21dc4cf9373f6e76",
+      "size_bytes": 617095
+    },
+    "neural_core/data/test.txt": {
+      "sha256": "442f36e11801bf05fff4ba3cca488428580f9fbf7398ff91852e87b84a08f454",
+      "size_bytes": 613710
+    },
+    "neural_core/data/jarvis_dialogue.txt": {
+      "sha256": "52c9c21ea3fd6756aa31fa51a833a4b7887f0e6bb00d24abb2c2170cda60503f",
+      "size_bytes": 15016
+    },
+    "corpus_addestramento.txt": {
+      "sha256": "e61ea2d94b9966d6a0f201ec2ad4187cf323cdd3bd1f9e89fa508127b9534e14",
+      "size_bytes": 1578
+    },
+    "jarvis.py": {
+      "sha256": "5c79927c6a1adcab7b73067a4da605bb2b259ca3ee86061fc1b5b0a5ec5bc364",
+      "size_bytes": 1226
+    },
+    "train.py": {
+      "sha256": "6fa34504ef79f7a48a3d7aa46ccf850970bb7a7ac1ac6bb0b212fb7a8895391e",
+      "size_bytes": 19767
+    },
+    "config.yaml": {
+      "sha256": "9260e3d65827c60a6f2342fa259e4d8e804a4bc388512418e6beb450c062cbf7",
+      "size_bytes": 5187
+    },
+    "requirements.txt": {
+      "sha256": "4090e2657354501250ac61237888148630fad6970932206783fe1ab6b348d566",
+      "size_bytes": 44
+    },
+    "LICENSE": {
+      "sha256": "7cd3218ebf5cb1f84803667572f62817eb34fee0fe234548a5832379e47c41a9",
+      "size_bytes": 2100
+    },
+    "THIRD_PARTY_NOTICES.md": {
+      "sha256": "27664c1f96d0092a6fa4f295ba621ac9b8cd1d26cf0dd70c8be564d23df6e134",
+      "size_bytes": 11565
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/00_EXECUTIVE_SUMMARY.md": {
+      "sha256": "0ff2f7b13e5deb9ee4b6774e45c4793a930a8b7efd216cce796daef3a2f7ef14",
+      "size_bytes": 8717
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/07_DIFFERENTIATION_AND_IP.md": {
+      "sha256": "4556b0747ca0de251912de67f9e8c71e63a41f55269e29f9768c8b7d5edf52f7",
+      "size_bytes": 10532
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/08_DEPENDENCIES_AND_PROVENANCE.md": {
+      "sha256": "a621bea58695b008d9205595d769239c7c7e01feeadb3c69c7b754c817570785",
+      "size_bytes": 13723
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/09_SECURITY_AND_AUTONOMY.md": {
+      "sha256": "171ed6bd12eaf6f71488b3840871816b4029eb1e4a9783aa8bd6b8f9e7d6d29d",
+      "size_bytes": 7222
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/11_ACQUISITION_DUE_DILIGENCE_CHECKLIST.md": {
+      "sha256": "c0065642368e4cfdd16b4d2c41ea0faec74f24daab4ae8315f22fb0f7311143e",
+      "size_bytes": 6099
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/12_RESTRICTED_DISCLOSURE_MAP.md": {
+      "sha256": "189b54abacec5cc044c7044f26acf27e123f81eb786421d76cd5fcd312182700",
+      "size_bytes": 7700
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/14_ACQUISITION_DATA_ROOM_INDEX.md": {
+      "sha256": "a4ee8066e4b1948f974e3b07a20af73d3f797fe4270b73dc93dbd95d4fe2f49a",
+      "size_bytes": 21989
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/15_IP_OWNERSHIP_AND_PROVENANCE.md": {
+      "sha256": "86b382137e1db063a93a6996b84758a07c5253d4e8d67f9c508a569e2f14ba8d",
+      "size_bytes": 11265
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/16_DATASET_CORPUS_PROVENANCE.md": {
+      "sha256": "264d374e81be04154c9b7b31e00ec4dd11f648c40d47dfec80b65e20846131ee",
+      "size_bytes": 9694
+    },
+    "DOCUMENTAZIONE/technical-acquisition-package/17_MODEL_TRAINING_PROVENANCE.md": {
+      "sha256": "f7a31c56d87417f53a111abbbe5aa74cd79317a1a4d5a20758c6632cdca02514",
+      "size_bytes": 10852
+    }
+  }
+}
