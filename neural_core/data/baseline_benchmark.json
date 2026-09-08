@@ -1,0 +1,13 @@
+{
+  "hardware": {
+    "platform": "test",
+    "python_version": "3.0",
+    "machine": "x86_64"
+  },
+  "inference": {
+    "mean": 0.001
+  },
+  "training": {
+    "mean": 0.01
+  }
+}

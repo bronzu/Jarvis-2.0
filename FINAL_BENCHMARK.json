@@ -1,0 +1,282 @@
+{
+  "hardware": {
+    "platform": "macOS-14.5-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python_version": "3.14.3",
+    "cpu_count": 8,
+    "numpy_version": "2.4.2"
+  },
+  "gpu": {
+    "torch_available": true,
+    "cuda_available": false,
+    "mps_available": true,
+    "torch_version": "2.13.0"
+  },
+  "ram": {
+    "rss": {
+      "description": "Resident Set Size (process physical memory in RAM)",
+      "bytes": 256573440,
+      "mb": 244.69,
+      "unit_note": "ru_maxrss units differ by platform: bytes on Darwin, KB on Linux"
+    },
+    "virtual_memory_mb": 244.6875,
+    "python_tracemalloc": {
+      "current_bytes": 66392485,
+      "peak_bytes": 68678749,
+      "available": true
+    }
+  },
+  "startup": {
+    "name": "startup",
+    "unit": "seconds",
+    "warmup": 3,
+    "iterations": 10,
+    "count": 10,
+    "mean": 0.00864497086731717,
+    "median": 0.008661104424390942,
+    "min": 0.008375333971343935,
+    "max": 0.008817874942906201,
+    "stddev": 0.00015745232570701557,
+    "p95": 0.00881779205519706
+  },
+  "model_loading": {
+    "name": "model_loading",
+    "unit": "seconds",
+    "warmup": 1,
+    "iterations": 5,
+    "count": 5,
+    "mean": 0.008813400217331947,
+    "median": 0.008791208965703845,
+    "min": 0.008560125017538667,
+    "max": 0.00902912497986108,
+    "stddev": 0.0001859330764290496,
+    "p95": 0.008955792058259249
+  },
+  "inference": {
+    "name": "inference_latency",
+    "unit": "seconds",
+    "warmup": 3,
+    "iterations": 20,
+    "tokens_per_iteration": 32,
+    "tokens_per_sec_mean": 56692.348146137025,
+    "tokens_per_sec_median": 56848.85931609813,
+    "count": 20,
+    "mean": 0.0005644500721246004,
+    "median": 0.0005628960789181292,
+    "min": 0.000537166022695601,
+    "max": 0.0006381660932675004,
+    "stddev": 2.152022763179978e-05,
+    "p95": 0.0005908330203965306
+  },
+  "training": {
+    "name": "training_throughput",
+    "unit": "seconds",
+    "warmup": 2,
+    "iterations": 10,
+    "steps_per_sec_mean": 482.41588797325954,
+    "steps_per_sec_median": 496.3035126509682,
+    "count": 10,
+    "mean": 0.0020729002193547786,
+    "median": 0.002014896075706929,
+    "min": 0.001987416995689273,
+    "max": 0.00235183397307992,
+    "stddev": 0.00012412776532181208,
+    "p95": 0.0022486660163849592
+  },
+  "checkpoint": {
+    "name": "checkpoint_size",
+    "size_bytes": 83976,
+    "size_mb": 0.08008575439453125
+  },
+  "tokenizer": {
+    "name": "tokenizer",
+    "encode": {
+      "unit": "seconds",
+      "warmup": 1,
+      "iterations": 20,
+      "count": 20,
+      "mean": 0.0020455167745240034,
+      "median": 0.001990896591451019,
+      "min": 0.001970792072825134,
+      "max": 0.0023470420856028795,
+      "stddev": 0.0001250578604014197,
+      "p95": 0.002339040976949036,
+      "tokens_per_call": 4800
+    },
+    "decode": {
+      "unit": "seconds",
+      "warmup": 1,
+      "iterations": 20,
+      "count": 20,
+      "mean": 0.001457045803545043,
+      "median": 0.0014098335523158312,
+      "min": 0.0013941669603809714,
+      "max": 0.0018010829808190465,
+      "stddev": 0.00011129600059754262,
+      "p95": 0.0017297499580308795
+    }
+  },
+  "batch_scaling": [
+    {
+      "count": 8,
+      "mean": 0.0005698278691852465,
+      "median": 0.0005617084680125117,
+      "min": 0.000553457997739315,
+      "max": 0.0005961250280961394,
+      "stddev": 1.7402295161356836e-05,
+      "p95": 0.0005931659834459424,
+      "batch_size": 1,
+      "seq_len": 32,
+      "tokens_per_iteration": 32,
+      "tokens_per_sec_mean": 56157.30947971071,
+      "name": "batch_scaling"
+    },
+    {
+      "count": 8,
+      "mean": 0.0006785206642234698,
+      "median": 0.0006514370325021446,
+      "min": 0.0006227500271052122,
+      "max": 0.0009188750991597772,
+      "stddev": 9.871604747144535e-05,
+      "p95": 0.0006664160173386335,
+      "batch_size": 2,
+      "seq_len": 32,
+      "tokens_per_iteration": 64,
+      "tokens_per_sec_mean": 94322.84582407602,
+      "name": "batch_scaling"
+    },
+    {
+      "count": 8,
+      "mean": 0.000883567874552682,
+      "median": 0.0008103749714791775,
+      "min": 0.0007519579958170652,
+      "max": 0.0012050420045852661,
+      "stddev": 0.00016685259844589545,
+      "p95": 0.001077124965377152,
+      "batch_size": 4,
+      "seq_len": 32,
+      "tokens_per_iteration": 128,
+      "tokens_per_sec_mean": 144867.19547697646,
+      "name": "batch_scaling"
+    },
+    {
+      "count": 8,
+      "mean": 0.001093213475542143,
+      "median": 0.0010743955499492586,
+      "min": 0.0009938339935615659,
+      "max": 0.0012322498951107264,
+      "stddev": 9.9598312615877e-05,
+      "p95": 0.0012022909941151738,
+      "batch_size": 8,
+      "seq_len": 32,
+      "tokens_per_iteration": 256,
+      "tokens_per_sec_mean": 234172.01281117147,
+      "name": "batch_scaling"
+    }
+  ],
+  "gpu_benchmark": {
+    "device": "mps",
+    "available": true,
+    "torch_version": "2.13.0",
+    "vocab_size": 26,
+    "d_model": 32,
+    "num_heads": 2,
+    "d_ff": 64,
+    "num_layers": 1,
+    "max_len": 64,
+    "warmup": 2,
+    "iterations": 10,
+    "model_loading": {
+      "count": 10,
+      "mean": 0.0010564667056314648,
+      "median": 0.001036020985338837,
+      "min": 0.0010142920073121786,
+      "max": 0.0012153750285506248,
+      "stddev": 5.985471542580547e-05,
+      "p95": 0.001087708049453795
+    },
+    "inference_latency": {
+      "count": 10,
+      "mean": 0.0012709624134004116,
+      "median": 0.0012033749953843653,
+      "min": 0.001137999934144318,
+      "max": 0.0015747499419376254,
+      "stddev": 0.00016492484019677657,
+      "p95": 0.0015646660467609763
+    },
+    "inference_tokens_per_sec": {
+      "mean": 100711.08212991199,
+      "median": 106367.50845825579
+    },
+    "training_step_proxy": {
+      "count": 10,
+      "mean": 0.0012656250037252903,
+      "median": 0.0012588119716383517,
+      "min": 0.0011801250511780381,
+      "max": 0.001377291977405548,
+      "stddev": 5.882025144591145e-05,
+      "p95": 0.0013367080828174949
+    },
+    "synchronization_overhead": {
+      "count": 10,
+      "mean": 0.0001606125384569168,
+      "median": 1.0630465112626553e-06,
+      "min": 8.749775588512421e-07,
+      "max": 0.0015932910609990358,
+      "stddev": 0.0005033927001196027,
+      "p95": 3.7921126931905746e-06
+    },
+    "batch_scaling": [
+      {
+        "count": 5,
+        "mean": 0.0011873834067955614,
+        "median": 0.001183624961413443,
+        "min": 0.0011497499654069543,
+        "max": 0.0012250420404598117,
+        "stddev": 3.469120288502715e-05,
+        "p95": 0.0012205420061945915,
+        "batch_size": 1,
+        "tokens_per_sec_mean": 26950.01447456611
+      },
+      {
+        "count": 5,
+        "mean": 0.001182258385233581,
+        "median": 0.001178625039756298,
+        "min": 0.0011236249702051282,
+        "max": 0.0012551669497042894,
+        "stddev": 4.7642702906948076e-05,
+        "p95": 0.0011882500257343054,
+        "batch_size": 2,
+        "tokens_per_sec_mean": 54133.68244992858
+      },
+      {
+        "count": 5,
+        "mean": 0.001158100226894021,
+        "median": 0.0011578340781852603,
+        "min": 0.001124582951888442,
+        "max": 0.0011862500105053186,
+        "stddev": 2.2586158137475076e-05,
+        "p95": 0.0011682920157909393,
+        "batch_size": 4,
+        "tokens_per_sec_mean": 110525.83967044971
+      },
+      {
+        "count": 5,
+        "mean": 0.0012485333951190113,
+        "median": 0.0011957919923588634,
+        "min": 0.0011552079813554883,
+        "max": 0.001468125032261014,
+        "stddev": 0.00013065058485894025,
+        "p95": 0.0012659169733524323,
+        "batch_size": 8,
+        "tokens_per_sec_mean": 205040.5708015506
+      }
+    ],
+    "memory": {
+      "available": true,
+      "current_allocated_bytes": 60160,
+      "driver_allocated_bytes": 19562496
+    }
+  },
+  "elapsed_seconds": 9.425276541034691
+}

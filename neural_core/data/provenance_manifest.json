@@ -1,0 +1,172 @@
+{
+  "data_dir": "neural_core/data",
+  "template_family": "mixed",
+  "seed": 42,
+  "files": [
+    {
+      "name": "cleaned_literature.txt",
+      "path": "neural_core/data/cleaned_literature.txt",
+      "size_bytes": 5681732,
+      "md5": "e1960fef1d883e05d930549260099320",
+      "examples": 8,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "full_corpus.txt",
+      "path": "neural_core/data/full_corpus.txt",
+      "size_bytes": 33428159,
+      "md5": "b4a55d911a5fa9a42fab5da9e0e043a9",
+      "examples": 30361,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "jarvis_dialogue.txt",
+      "path": "neural_core/data/jarvis_dialogue.txt",
+      "size_bytes": 15016,
+      "md5": "89aa0f144e5d06ee5bf79c87b3eba00d",
+      "examples": 194,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "test.txt",
+      "path": "neural_core/data/test.txt",
+      "size_bytes": 616334,
+      "md5": "605dac564a70521b375a90e6e0fac7f2",
+      "examples": 439,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "test_clean.txt",
+      "path": "neural_core/data/test_clean.txt",
+      "size_bytes": 2465921,
+      "md5": "54d8cbdd9de5a043f04cd366a29a5a71",
+      "examples": 3037,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "test_sentence_clean.txt",
+      "path": "neural_core/data/test_sentence_clean.txt",
+      "size_bytes": 783319,
+      "md5": "6008a2dd1598033736a0d92d1dfee201",
+      "examples": 43,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "train.txt",
+      "path": "neural_core/data/train.txt",
+      "size_bytes": 5082952,
+      "md5": "48fcf61be05468483950788fc0afe183",
+      "examples": 3573,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "train_clean.txt",
+      "path": "neural_core/data/train_clean.txt",
+      "size_bytes": 28186698,
+      "md5": "ba171d47756af9263e641974f6c9ae91",
+      "examples": 24288,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "train_sentence_clean.txt",
+      "path": "neural_core/data/train_sentence_clean.txt",
+      "size_bytes": 2728643,
+      "md5": "0adc5181e8eb44b8b10ca58ccc56533c",
+      "examples": 335,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "val_clean.txt",
+      "path": "neural_core/data/val_clean.txt",
+      "size_bytes": 2775538,
+      "md5": "1135874544bb48103a1e7385bef2b918",
+      "examples": 3036,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "val_sentence_clean.txt",
+      "path": "neural_core/data/val_sentence_clean.txt",
+      "size_bytes": 9129,
+      "md5": "c2fb3366dd5410bf86f0061e853b9c5d",
+      "examples": 41,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    },
+    {
+      "name": "validation.txt",
+      "path": "neural_core/data/validation.txt",
+      "size_bytes": 639516,
+      "md5": "a6465db84bd420664c39102e25f4c3d6",
+      "examples": 458,
+      "source_tags": [],
+      "template_families": [
+        "mixed"
+      ],
+      "generation_seed": 42,
+      "notes": "Provenance manifest built by neural_core.provenance_pipeline"
+    }
+  ],
+  "summary": {
+    "total_files": 12,
+    "total_examples": 65813,
+    "template_leakage": {
+      "match_count": 0,
+      "matches": []
+    },
+    "total_records": 41175
+  }
+}

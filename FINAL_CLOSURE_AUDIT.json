@@ -1,0 +1,104 @@
+{
+  "audit_date": "2026-09-01T18:14:07.942904Z",
+  "audit_name": "FINAL_CLOSURE_AUDIT",
+  "test_count": {
+    "collected": 863,
+    "passed_2_consecutive_runs": true,
+    "failures": 0,
+    "errors": 0,
+    "duplicates": 0,
+    "skipped": 0
+  },
+  "security": {
+    "unique_findings": 315,
+    "reviewed_classification": {
+      "SAFE": 231,
+      "MITIGATED": 70,
+      "ACCEPTED LIMITATION": 14,
+      "VULNERABILITY": 0
+    },
+    "reviewed_vulnerabilities_count": 0,
+    "unreviewed_findings": 0,
+    "final_verdict": "PASS"
+  },
+  "os_isolation": {
+    "previous_state": "PASS WITH LIMITATION (os_sandbox=false)",
+    "current_state": "PASS (os_sandbox=true)",
+    "implementation": "neural_core/os_sandbox.py with 4 levels",
+    "macos_primitive": "sandbox-exec (Mandatory Access Control, kernel-enforced)",
+    "linux_primitive": "rlimit + setsid + chdir (or chroot when root)",
+    "production_integration": "ToolSystem.execute('python', ...) -> PythonRunner.run_isolated() -> neural_core.os_sandbox.run_isolated()",
+    "regression_tests": [
+      "TESTS/test_os_sandbox.py: 9 tests (sandbox-exec MAC + rlimits + chdir)",
+      "TESTS/test_tool_system_integration.py: 12 tests (end-to-end through production path)"
+    ],
+    "adversarial_review": "12 attack vectors tested (subprocess, shell, fork, /etc write, symlink, signal, setrlimit, /tmp write, type-walk to system, /dev/fd, env injection, /etc read). All blocked at the right layer or allowed by design (read of /etc/passwd is allowed by SBPL profile; writes anywhere outside sandbox_dir are blocked by MAC).",
+    "requirement_analysis": "OS_ISOLATION_REQUIREMENT_ANALYSIS.md"
+  },
+  "category_status": {
+    "SECURITY": "PASS",
+    "DATASET": "PASS",
+    "CHECKPOINT": "PASS",
+    "PERFORMANCE": "PASS",
+    "E2E": "PASS",
+    "TESTS": "PASS",
+    "TEST_QUALITY": "PASS",
+    "REPOSITORY": "PASS",
+    "EXTERNAL_AI": "PASS",
+    "OS_ISOLATION": "PASS",
+    "REPORT_CONSISTENCY": "PASS",
+    "OS_ISOLATION_INTEGRATION": "PASS"
+  },
+  "verdict": {
+    "code_acceptance": "PASS",
+    "production_deployment_readiness": "PASS",
+    "previous_verdict": "PASS WITH LIMITATION (then CONDITIONAL after os_sandbox was added, now fully PASS)",
+    "change_reason": "After the FINAL_CLOSURE_VERIFICATION, no blocking production requirement remains unmet. OS-level isolation is implemented AND integrated into the production path. Container/VM deployment is a defense-in-depth recommendation only.",
+    "production_deployment_notes": "Container/VM deployment remains recommended as defense-in-depth, but is not a blocking acceptance requirement. The OS-level sandbox (neural_core/os_sandbox.py) is implemented, integrated into ToolSystem.execute('python', ...) via PythonRunner.run_isolated(), and verified to enforce rlimits, setsid, umask, env-strip, and (on macOS) SBPL Mandatory Access Control."
+  },
+  "new_files": [
+    "neural_core/os_sandbox.py",
+    "TESTS/test_os_sandbox.py",
+    "TESTS/test_tool_system_integration.py",
+    "OS_ISOLATION_REQUIREMENT_ANALYSIS.md",
+    "TESTS/test_layered_security.py"
+  ],
+  "modified_files": [
+    "executive_system/tools/python_runner.py (added run_isolated method with OS-level layer)",
+    "executive_system/tools/tool_system.py (production path uses run_isolated)",
+    "neural_core/os_isolation_probe.py",
+    "neural_core/security_report_final.py",
+    "TESTS/test_final_gap_closure.py",
+    "FINAL_ACCEPTANCE_AUDIT.md (SUPERSEDED note added)",
+    "THIRD_PASS_FINAL_REPORT.md (header updated)"
+  ],
+  "closure_verification_findings": [
+    {
+      "id": "GAP-1",
+      "title": "rlimits not applied under macOS sandbox-exec",
+      "discovered_by": "FINAL_CLOSURE_VERIFICATION (2026-09-01)",
+      "severity": "HIGH",
+      "description": "When sandbox-exec is used on macOS, the parent's preexec_fn is bypassed. rlimits/setsid/umask/env-strip were silently skipped. The docstring claimed 'All: subprocess timeout, env sanitization, umask 0o077' but only the SBPL MAC was actually enforced on macOS.",
+      "fix": "Moved rlimits/setsid/umask/env-strip/fd-close inside the runner template, gated by a new is_sandboxed flag. On macOS the block runs in the child Python interpreter before the user code; on Linux it still runs via preexec_fn.",
+      "regression_test": "TESTS/test_os_sandbox.py::TestOSSandboxPrimitivesEnforced::test_rlimits_effective_under_strict"
+    },
+    {
+      "id": "GAP-2",
+      "title": "weak contract for missing run_isolated in production path",
+      "discovered_by": "FINAL_CLOSURE_VERIFICATION (2026-09-01)",
+      "severity": "MEDIUM",
+      "description": "ToolSystem.execute('python', ...) had a silent fallback to in-process run() if run_isolated were missing. A future regression could silently drop OS-level isolation.",
+      "fix": "Replaced the silent fallback with a hard RuntimeError. Production path now refuses to fall back to in-process execution.",
+      "regression_test": "TESTS/test_tool_system_integration.py::TestProductionPathNoBypass::test_runner_without_run_isolated_is_rejected"
+    }
+  ],
+  "direct_bypass_audit": {
+    "python_runner_run": "Application-only, layers 1-4. No OS isolation. NOT used by production path.",
+    "python_runner_run_isolated": "Full 5 layers. Used by ToolSystem.execute('python', ...).",
+    "tool_system_execute": "Calls run_isolated, refuses with RuntimeError if missing.",
+    "cognitive_core_safe_calculator": "Uses eval() with character allowlist '0123456789+-*/(). ' + empty builtins. Domain-specific calculator; not a Python execution path. Input filter is the primary defense.",
+    "action_executor_execute": "Requires the action to be a callable (function reference, not raw code).",
+    "coordinator_execute_python_tool": "Delegates to ToolSystem.execute.",
+    "conclusion": "No production code path bypasses ToolSystem to call run() directly with raw code."
+  }
+}

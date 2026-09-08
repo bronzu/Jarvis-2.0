@@ -1,0 +1,480 @@
+# ==================================================
+# JARVIS CORE CONFIGURATION
+# Architecture aligned version
+# ==================================================
+
+
+# ==================================================
+# NEURAL CORE
+# ==================================================
+
+neural_core:
+
+  enabled: true
+
+  type: internal
+
+  primary: true
+
+  architecture:
+    tokenizer: true
+    embeddings: true
+    model: true
+    training: true
+    evaluation: true
+
+
+  capabilities:
+
+    reasoning: true
+    learning: true
+    inference: true
+    evaluation: true
+
+
+
+# ==================================================
+# LLM PROVIDERS
+# ==================================================
+
+llm:
+
+
+  timeout_seconds: 15
+
+
+  default_provider: internal
+
+
+
+  providers:
+
+
+    internal:
+
+      enabled: true
+
+      type: neural_core
+
+
+
+# ==================================================
+# ROUTER
+# ==================================================
+
+router:
+
+
+  # sistema principale utilizzato da JARVIS
+
+  primary_system: neural-core
+
+
+
+  fallback:
+
+
+    enabled: false
+
+
+
+  routing_rules:
+
+
+    identity:
+
+      handler: internal_identity
+
+
+
+    memory:
+
+      handler: memory_system
+
+
+
+    knowledge:
+
+      handler: knowledge_system
+
+
+
+    reasoning:
+
+      handler: reasoning_engine
+
+
+
+    neural_processing:
+
+      handler: neural_core
+
+
+
+
+
+# ==================================================
+# IDENTITY SYSTEM
+# ==================================================
+
+identity:
+
+  name: JARVIS
+
+
+  creator:
+
+    source: internal_configuration
+
+    value: Riccardo Bronzuoli
+
+
+
+
+
+# ==================================================
+# MEMORY SYSTEM
+# ==================================================
+
+memory:
+
+
+  enabled: true
+
+
+  systems:
+
+
+    working_memory:
+
+      enabled: true
+
+
+
+    episodic_memory:
+
+      enabled: true
+
+
+
+    semantic_memory:
+
+      enabled: true
+
+
+
+    procedural_memory:
+
+      enabled: true
+
+
+
+    self_memory:
+
+      enabled: true
+
+
+
+
+
+# ==================================================
+# KNOWLEDGE SYSTEM
+# ==================================================
+
+knowledge:
+
+
+  enabled: true
+
+
+  verification_required: true
+
+
+  states:
+
+
+    - UNKNOWN
+
+    - UNVERIFIED
+
+    - VERIFIED
+
+    - CONFLICTING
+
+
+
+
+
+# ==================================================
+# INTERNET / NETWORK
+# ==================================================
+
+network:
+
+
+  enabled: true
+
+
+  policy:
+
+
+    allow_http: false
+
+
+    allow_https: true
+
+
+    allow_upload: false
+
+
+    allow_download_execution: false
+
+
+    check_domains: true
+
+
+
+  manager:
+
+    enabled: true
+
+
+
+
+
+# ==================================================
+# TOOLS
+# ==================================================
+
+tools:
+
+
+  enabled: true
+
+
+  require_permission: true
+
+
+  capabilities:
+
+
+    internet:
+
+      enabled: true
+
+
+    filesystem:
+
+      enabled: true
+
+
+    code_execution:
+
+      enabled: true
+
+
+
+
+
+# ==================================================
+# SECURITY
+# ==================================================
+
+security:
+
+
+  enabled: true
+
+
+  permissions:
+
+
+    dynamic_permission_creation: false
+
+
+    self_modification_without_review: false
+
+
+
+
+
+# ==================================================
+# SELF IMPROVEMENT
+# ==================================================
+
+self_improvement:
+
+
+  enabled: false
+
+
+  mode:
+
+    controlled_proposal_only: true
+
+
+  requirements:
+
+
+    sandbox: true
+
+    benchmark: true
+
+    tests_required: true
+
+    training: true
+
+
+  triggers:
+
+    manual: true
+
+    periodic: false
+
+    weakness_based: true
+
+
+  limits:
+
+    max_candidates_per_cycle: 3
+
+    max_concurrent_cycles: 1
+
+    cycle_timeout_seconds: 300
+
+
+  thresholds:
+
+    min_improvement: 0.01
+
+    critical_regression_block: true
+
+
+  approval:
+
+    require_user_approval: true
+
+    auto_deploy: false
+  training:
+
+    allowed_parameters:
+
+      - learning_rate
+
+      - epochs
+
+      - batch_size
+
+      - context_size
+
+      - dataset_selection
+
+      - seed
+
+    forbidden_parameters:
+
+      - security_policies
+
+      - permission_guard
+
+      - audit_system
+
+      - benchmark_logic
+
+      - rollback_logic
+
+
+  checkpoint:
+
+    validate_after_training: true
+
+    lineage_required: true
+
+    parent_checkpoint_required: true
+
+
+
+
+# ==================================================
+# AUTONOMY
+# ==================================================
+
+autonomy:
+
+
+  enabled: false
+
+
+  requirements:
+
+
+    goal_manager: true
+
+    planner: true
+
+    executor: true
+
+
+  restrictions:
+
+
+    modify_permissions: false
+
+    bypass_security: false
+
+
+
+
+
+# ==================================================
+# VISION SYSTEM
+# ==================================================
+
+vision:
+
+
+  enabled: false
+
+
+  screenshot_enabled: false
+
+
+  ocr_enabled: false
+
+
+# ==================================================
+# AUDIT SYSTEM
+# ==================================================
+
+audit:
+
+
+  enabled: true
+
+
+  log_level: INFO
+
+
+  log_directory: ./audit_logs
+
+
+  max_file_size: 10485760
+
+
+  backup_count: 5
+
+
+# ==================================================
+# LOGGING
+# ==================================================
+
+logging:
+
+
+  level: INFO
+
+
+  save_history: true
+
+
+  save_errors: true

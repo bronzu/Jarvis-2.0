@@ -1,0 +1,28 @@
+{
+  "baseline_id": "baseline_20260826_103727",
+  "created_at": "2026-08-26T10:37:00",
+  "source": "pre-hardening audit backup",
+  "artifacts": {
+    "model.pkl": {
+      "size_bytes": 19784133,
+      "sha256": "d169a6782efc6ba523b78cfae6800a68ee3fdd43e9f723d8d73972875ad7ba0d"
+    },
+    "training_state.pkl": {
+      "size_bytes": 59461188,
+      "sha256": "797d8e18a0e8cefccf6209f997758e6532d2169230c46fd7a29036ec9c5d0a92"
+    },
+    "best_model.json": {
+      "size_bytes": 53465951,
+      "sha256": "c1339fd90c09378ed2787e9149b03fe97246438690a929eedb612f461353eb1a"
+    },
+    "tokenizer.json": {
+      "size_bytes": 176335,
+      "sha256": "0de73c1d25d874ef53ff25404d8593d47831e09cd2c87559498c1406bd0fa840"
+    },
+    "tokenizer.pkl": {
+      "size_bytes": 176208,
+      "sha256": "a60f9a9ad80fe422c73431604660d37f919e73e05f9b48c46dbff4985e7472e6"
+    }
+  },
+  "notes": "Baseline protetta pre-hardening. Non modificare."
+}
