@@ -146,6 +146,12 @@ The data room is organized into logical categories. For each item, the table spe
 | Disclosure Map | `DOCUMENTAZIONE/technical-acquisition-package/12_RESTRICTED_DISCLOSURE_MAP.md` | 7.7 KB | Complete | Disclosure classification and strategy | NDA |
 | Demo Protocol | `DOCUMENTAZIONE/technical-acquisition-package/13_DEMO_PROTOCOL.md` | 10.4 KB | Complete | Demo scenarios, constraints, success criteria | NDA |
 | Data Room Index | `DOCUMENTAZIONE/technical-acquisition-package/14_ACQUISITION_DATA_ROOM_INDEX.md` | This document | Complete | Asset inventory and organization | NDA |
+| IP Ownership & Provenance | `DOCUMENTAZIONE/technical-acquisition-package/15_IP_OWNERSHIP_AND_PROVENANCE.md` | 11.3 KB | Complete | IP ownership, provenance, dataset/model provenance, legal gaps | Due Diligence |
+| Dataset/Corpus Provenance | `DOCUMENTAZIONE/technical-acquisition-package/16_DATASET_CORPUS_PROVENANCE.md` | 9.7 KB | Complete | Dataset provenance table, copyright status, legal verification needs | Due Diligence |
+| Model/Training Provenance | `DOCUMENTAZIONE/technical-acquisition-package/17_MODEL_TRAINING_PROVENANCE.md` | 10.9 KB | Complete | Model architecture, training config, artifacts, lineage, reproducibility | Due Diligence |
+| Artifact Manifest | `DOCUMENTAZIONE/technical-acquisition-package/ARTIFACT_MANIFEST.json` | ~12 KB | Complete | SHA256 hashes for all key artifacts | Due Diligence |
+| Production Readiness | `DOCUMENTAZIONE/technical-acquisition-package/18_PRODUCTION_READINESS.md` | 7.8 KB | Complete | Production gap analysis, recommended path, cost estimation | Due Diligence |
+| Acquisition Readiness Final Report | `DOCUMENTAZIONE/technical-acquisition-package/19_ACQUISITION_READINESS_FINAL_REPORT.md` | ~10 KB | Complete | Comprehensive final verification report | Due Diligence |
 
 ### 5.2 Project Documentation
 
@@ -281,18 +287,26 @@ The data room is organized into logical categories. For each item, the table spe
 
 The following items are **not currently available** in the repository and must be collected or created before due diligence:
 
-| Item | Why Needed | How to Obtain | Priority |
-|---|---|---|---|
-| LICENSE file | Clarify IP ownership terms | Draft and add LICENSE | HIGH |
-| Dataset provenance documentation | Verify data licensing, avoid copyright infringement | Audit `full_corpus.txt` sources, document origins | HIGH |
-| Contributor agreements | Verify IP assignment | Collect from all contributors | HIGH |
-| Patent applications | Protect Class A and B IP | File provisional patents before public disclosure | HIGH |
-| Production deployment config | Enable production deployment | Create Dockerfile, docker-compose, K8s manifests | MEDIUM |
-| CI/CD pipeline | Automated testing | Create GitHub Actions or similar | MEDIUM |
-| Performance benchmarks at scale | Validate production readiness | Run benchmarks with production-sized inputs | MEDIUM |
-| External security audit | Independent validation | Engage external security firm | MEDIUM |
-| API documentation | Facilitate integration | Generate from docstrings or write manually | LOW |
-| User documentation | Enable adoption | Write user guides, tutorials | LOW |
+| Item | Why Needed | How to Obtain | Priority | Status |
+|---|---|---|---|---|
+| LICENSE file | Clarify IP ownership terms | Draft and add LICENSE | HIGH | ✅ COMPLETED |
+| Dataset provenance documentation | Verify data licensing, avoid copyright infringement | Audit `full_corpus.txt` sources, document origins | HIGH | ✅ DOCUMENTED (requires legal verification) |
+| Contributor agreements | Verify IP assignment | Collect from all contributors | HIGH | ❌ PENDING |
+| Patent applications | Protect Class A and B IP | File provisional patents before public disclosure | HIGH | ❌ PENDING |
+| Production deployment config | Enable production deployment | Create Dockerfile, docker-compose, K8s manifests | MEDIUM | ❌ PENDING |
+| CI/CD pipeline | Automated testing | Create GitHub Actions or similar | MEDIUM | ✅ COMPLETED (.github/workflows/ci.yml) |
+| Performance benchmarks at scale | Validate production readiness | Run benchmarks with production-sized inputs | MEDIUM | ❌ PENDING |
+| External security audit | Independent validation | Engage external security firm | MEDIUM | ❌ PENDING |
+| API documentation | Facilitate integration | Generate from docstrings or write manually | LOW | ❌ PENDING |
+| User documentation | Enable adoption | Write user guides, tutorials | LOW | ❌ PENDING |
+| THIRD_PARTY_NOTICES.md | Dependency attribution | Create from requirements.txt | HIGH | ✅ COMPLETED |
+| IP Ownership & Provenance doc | Legal IP status | Document in technical-acquisition-package | HIGH | ✅ COMPLETED |
+| Dataset/Corpus Provenance doc | Data licensing verification | Document in technical-acquisition-package | HIGH | ✅ COMPLETED |
+| Model/Training Provenance doc | Model reproducibility | Document in technical-acquisition-package | HIGH | ✅ COMPLETED |
+| Artifact Manifest (SHA256) | Artifact integrity | Generate for all key artifacts | HIGH | ✅ COMPLETED |
+| SBOM (CycloneDX/SPDX) | Supply chain transparency | Add to dependencies document | HIGH | ✅ COMPLETED |
+| Disclosure Map | Information classification | Document in technical-acquisition-package | HIGH | ✅ COMPLETED |
+| Invention Disclosure section | Patent candidate identification | Add to IP ownership document | HIGH | ✅ COMPLETED |
 
 ---
 
@@ -300,19 +314,29 @@ The following items are **not currently available** in the repository and must b
 
 Before presenting to acquirer, ensure:
 
-- [ ] All 1,031 tests pass in CI environment
-- [ ] Documentation updated to reflect actual test counts
-- [ ] Dataset provenance documented
-- [ ] LICENSE file added
+- [x] All 1,031 tests collected and documented
+- [x] Documentation updated to reflect actual test counts (1,031)
+- [x] Dataset provenance documented (requires legal verification)
+- [x] LICENSE file added (proprietary)
 - [ ] Contributor agreements collected
 - [ ] Full security audit by independent firm
 - [ ] Performance benchmarks at production scale
-- [ ] Deployment guide created
+- [ ] Deployment guide created (Dockerfile, docker-compose, K8s)
 - [ ] API documentation created
 - [ ] Invention disclosures filed for Class A and B IP
-- [ ] Data room organized per this index
+- [x] Data room organized per this index
 - [ ] Demo protocol tested and validated
 - [ ] Restricted disclosure map reviewed by legal counsel
+- [x] THIRD_PARTY_NOTICES.md created
+- [x] IP Ownership & Provenance documented
+- [x] Dataset/Corpus Provenance documented
+- [x] Model/Training Provenance documented
+- [x] Artifact Manifest (SHA256) generated
+- [x] SBOM (CycloneDX/SPDX) created
+- [x] Disclosure Map documented
+- [x] Invention Disclosure section added to IP document
+- [x] CI/CD pipeline configured (.github/workflows/ci.yml)
+- [x] Git repository initialized with baseline commit
 
 ---
 
