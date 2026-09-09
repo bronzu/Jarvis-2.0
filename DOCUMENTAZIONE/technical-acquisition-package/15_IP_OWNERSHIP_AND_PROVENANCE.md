@@ -172,7 +172,36 @@ MODEL (model.pkl, 21.9 MB, 2.7M params)
 
 ---
 
-## 8. Evidence Limitations
+## 8. IP / Invention Disclosure Candidates
+
+Based on the differentiation analysis (`07_DIFFERENTIATION_AND_IP.md`), the following technical areas are classified as **Class A — Potentially Differentiated Architecture** and may merit professional IP/legal review for patentability. This is **not a legal opinion** — it identifies candidates for patent counsel evaluation.
+
+### 8.1 Class A — Potentially Differentiated Architecture
+
+| Candidate | Description | Key Files | Why Candidate |
+|---|---|---|---|
+| **AgentRuntime with explicit task lifecycle** | 11-state lifecycle with enforced transition matrix, serializable `AgentState`, budget/deadline enforcement, structured recovery policy, checkpoint/resume with versioned state schema | `cognitive_core/runtime/agent_runtime.py`, `task_lifecycle.py`, `agent_state.py`, `recovery.py` | Coherent agent execution model not commonly found in open-source frameworks; explicit state versioning with transition matrix |
+| **OS-level sandbox integrated in production path** | Kernel-enforced isolation (macOS `sandbox-exec` MAC + Linux `chroot`/`rlimits`) integrated into Python tool execution pipeline; 5-layer defense (permission → AST → literal → builtins → OS) with production-path wiring via `PythonRunner.run_isolated()` → `os_sandbox.run_isolated()` | `neural_core/os_sandbox.py`, `executive_system/tools/python_runner.py` | Kernel-enforced MAC integrated into production code execution is uncommon; defense-in-depth architecture with AST gate targeting type-introspection patterns |
+| **Structured action/verification/recovery loop** | `Action` (preconditions, risk, provenance), `VerificationResult` (VERIFIED/FAILED/UNKNOWN/UNVERIFIED), `RecoveryPolicy` (retry→reparam→different_tool→different_plan→user_escalation) with `_recovered_action` slot injection | `cognitive_core/runtime/action.py`, `verification.py`, `recovery.py` | Structured approach to agent action management with explicit belief state updates |
+
+### 8.2 Class B — Advanced Engineering / Implementation (Trade Secret Candidates)
+
+| Candidate | Description | Key Files |
+|---|---|---|
+| **MicroTransformer (NumPy-only)** | Complete transformer implementation in pure NumPy with forward/backward, checkpoint, training loop | `neural_core/network.py`, `model.py`, `torch_model.py` |
+| **Unified memory with 7 subsystems** | Composite architecture coordinating working, episodic, semantic, procedural, unified, vector, and knowledge graph with LRU+TTL eviction and disk persistence | `cognitive_core/memory/unified_memory.py` |
+| **5-layer Python sandbox defense** | AST gate + literal re-scan + restricted builtins + OS isolation; AST gate specifically targets type-introspection patterns (`__class__`, `__bases__`, `__subclasses__`) | `executive_system/tools/python_runner.py` |
+| **Tokenizer (8,590 vocab, technical mode)** | Custom tokenizer with whitespace and technical pre-tokenization modes (Italian/code/math) | `neural_core/tokenizer.py` |
+
+### 8.3 Disclosure Classification
+
+> **Potential invention disclosure candidates — requires professional IP/legal review**
+
+These items are identified based on technical architecture analysis. No patentability determination has been made. Engagement of qualified patent counsel is required before any disclosure or filing.
+
+---
+
+## 9. Evidence Limitations
 
 | Limitation | Impact |
 |---|---|

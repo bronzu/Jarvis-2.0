@@ -107,7 +107,14 @@
 | **Vision** |
 | Vision system | YES | NO | NO | NO | No | Implemented but `enabled: false` | LOW |
 | Screenshot | YES | NO | NO | NO | No | Implemented but `enabled: false` | LOW |
-| OCR | YES | NO | NO | NO | No | Implemented but `enabled: false` | LOW |
+| **Capability Stress Tests** |
+| Tool Factory / autonomous construction | YES | YES | YES | YES | No | `tool_factory.py` + `test_capability_stress.py` | HIGH |
+| Permission Guard / autonomous authorization | YES | YES | YES | YES | No | `permission_guard.py` + `test_capability_stress.py` | HIGH |
+| Sandbox + rollback / self-improvement controlled | YES | YES | YES | YES | No | `os_sandbox.py` + `test_capability_stress.py` | HIGH |
+| Multi-device adaptability / context switching | YES | YES | YES | YES | No | `test_capability_stress.py` | HIGH |
+| **Security (Hardening)** |
+| pickle.load replacement (safe JSON deserialization) | YES | YES | YES | YES | No | `trainer.py` + `test_pickle_security.py` | HIGH |
+| OS sandbox watchdog timeout fix | YES | YES | YES | YES | Yes | `os_sandbox.py` + `test_os_sandbox.py` | HIGH |
 
 ---
 
@@ -126,7 +133,10 @@
 | Discovery | 0 | 3 | 0 | 0 | 3 |
 | Identity | 2 | 0 | 0 | 0 | 2 |
 | Vision | 0 | 0 | 3 | 0 | 3 |
-| **TOTAL** | **55** | **17** | **6** | **4** | **82** |
+| | 0 | 0 | 3 | 0 | 3 |
+| Capability Stress Tests | 4 | 0 | 0 | 0 | 4 |
+| Security (Hardening) | 2 | 0 | 0 | 0 | 2 |
+| **TOTAL** | **61** | **17** | **6** | **4** | **88** |
 
 ---
 

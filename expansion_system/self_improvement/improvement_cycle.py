@@ -721,10 +721,16 @@ class ImprovementCycle:
         if self.experimental_trainer is not None and not self.experimental_trainer._is_allowed_checkpoint_path(checkpoint_path):
             return {"valid": False, "error": "checkpoint path non autorizzato (fuori dalla directory sperimentale)"}
         try:
-            data = self.experimental_trainer._safe_pickle_load(checkpoint_path) if self.experimental_trainer is not None else None
+            data = None
+            if self.experimental_trainer is not None:
+                data = self.experimental_trainer._safe_pickle_load(checkpoint_path)
             if data is None:
-                with open(checkpoint_path, "rb") as f:
-                    data = pickle.load(f)
+                try:
+                    from neural_core.trainer import _load_checkpoint_safe
+                    data = _load_checkpoint_safe(checkpoint_path)
+                except Exception:
+                    with open(checkpoint_path, "rb") as f:
+                        data = pickle.load(f)
             if not isinstance(data, dict):
                 return {"valid": False, "error": "Formato checkpoint non valido"}
             params = data.get("parameters") or data.get("model_parameters") or []

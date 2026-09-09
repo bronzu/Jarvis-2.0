@@ -71,6 +71,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -280,12 +281,14 @@ _RUNNER_TEMPLATE = textwrap.dedent('''
                 "KeyError": KeyError, "IndexError": IndexError,
                 "ZeroDivisionError": ZeroDivisionError,
                 "NotImplementedError": NotImplementedError,
-                "ArithmeticError": ArithmeticError, "LookupError": LookupError,
-                "open": open}}
+                 "ArithmeticError": ArithmeticError, "LookupError": LookupError,
+                 "open": open, "__build_class__": __build_class__}}
+    if not paranoid:
+        allowed["__import__"] = __import__
 
     try:
         exec(compile(user_code, "<sandbox>", "exec"),
-             {{"__builtins__": allowed}})
+             {{"__name__": "<sandbox>", "__builtins__": allowed}})
         print("__SANDBOX_OK__")
     except SystemExit as e:
         print(f"__SANDBOX_SYSTEM_EXIT__:{{e.code}}")
@@ -380,15 +383,28 @@ def run_isolated(
             preexec_fn=preexec,
             text=True,
         )
-        try:
-            stdout, _ = proc.communicate(timeout=timeout_seconds)
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            proc.kill()
-            try:
-                stdout, _ = proc.communicate(timeout=1.0)
-            except subprocess.TimeoutExpired:
-                stdout = ""
+        if timeout_seconds is not None and timeout_seconds > 0:
+            timed_out_event = threading.Event()
+            def _watchdog():
+                time.sleep(timeout_seconds)
+                if proc.poll() is None:
+                    timed_out_event.set()
+                    try:
+                        proc.kill()
+                    except OSError:
+                        pass
+            wd = threading.Thread(target=_watchdog, daemon=True)
+            wd.start()
+            stdout, _ = proc.communicate()
+            wd.join(timeout=1.0)
+            if timed_out_event.is_set():
+                timed_out = True
+                try:
+                    stdout, _ = proc.communicate(timeout=1.0)
+                except subprocess.TimeoutExpired:
+                    stdout = ""
+        else:
+            stdout, _ = proc.communicate()
         returncode = proc.returncode if proc else -1
         output = stdout or ""
 

@@ -27,6 +27,7 @@ Funzionalità di training:
 
 import hashlib
 import json
+import os
 import pickle
 from pathlib import Path
 from typing import List, Optional
@@ -239,6 +240,51 @@ def build_model(architecture: str = "next_token", **config):
     )
 
 
+def _save_checkpoint_safe(path: str, state: dict) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(_to_serializable(state), f)
+
+
+def _load_checkpoint_safe(path: str) -> dict:
+    with open(path, "r", encoding="utf-8") as f:
+        return _from_serializable(json.load(f))
+
+
+def _safe_weights_path(path: str) -> tuple:
+    base = os.path.splitext(path)[0]
+    return base + ".json", base + ".npz"
+
+
+def _to_serializable(obj):
+    if isinstance(obj, np.ndarray):
+        return {"__ndarray__": True, "dtype": str(obj.dtype), "shape": list(obj.shape), "data": obj.tolist()}
+    elif isinstance(obj, dict):
+        return {k: _to_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_to_serializable(v) for v in obj]
+    return obj
+
+
+def _from_serializable(obj):
+    if isinstance(obj, dict) and obj.get("__ndarray__"):
+        return np.array(obj["data"], dtype=obj.get("dtype", "float64")).reshape(obj["shape"])
+    elif isinstance(obj, dict):
+        return {k: _from_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_from_serializable(v) for v in obj]
+    return obj
+
+
+def _save_weights_safe(path: str, payload: dict) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(_to_serializable(payload), f)
+
+
+def _load_weights_safe(path: str) -> dict:
+    with open(path, "r", encoding="utf-8") as f:
+        return _from_serializable(json.load(f))
+
+
 def load_model_from_weights(path, vocab_size: Optional[int] = None):
     """
     Ricostruisce un modello dai pesi salvati da `Trainer.save_weights()`.
@@ -249,8 +295,11 @@ def load_model_from_weights(path, vocab_size: Optional[int] = None):
     Returns:
         Il modello con i pesi caricati.
     """
-    with open(path, "rb") as handle:
-        payload = pickle.load(handle)
+    try:
+        payload = _load_weights_safe(path)
+    except Exception:
+        with open(path, "rb") as handle:
+            payload = pickle.load(handle)
 
     if not isinstance(payload, dict):
         raise ValueError("File dei pesi non valido.")
@@ -782,8 +831,7 @@ class Trainer:
         target = Path(path)
         if str(target.parent):
             target.parent.mkdir(parents=True, exist_ok=True)
-        with open(target, "wb") as handle:
-            pickle.dump(self.state_dict(), handle)
+        _save_checkpoint_safe(str(target), self.state_dict())
         return str(target)
 
     def load_checkpoint(self, path, load_tokenizer: bool = False) -> dict:
@@ -796,8 +844,11 @@ class Trainer:
         if not source.exists():
             raise FileNotFoundError(f"Checkpoint non trovato: {path}")
 
-        with open(source, "rb") as handle:
-            state = pickle.load(handle)
+        try:
+            state = _load_checkpoint_safe(str(source))
+        except Exception:
+            with open(source, "rb") as handle:
+                state = pickle.load(handle)
 
         if not isinstance(state, dict) or state.get("format") != self.CHECKPOINT_FORMAT:
             raise ValueError("Formato di checkpoint non riconosciuto.")
@@ -888,12 +939,18 @@ class Trainer:
         return self.load_checkpoint(path)
 
     def save_tokenizer(self, path: str) -> None:
-        with open(path, "wb") as file:
-            pickle.dump(self.tokenizer, file)
+        if hasattr(self.tokenizer, "save"):
+            self.tokenizer.save(path)
+        else:
+            with open(path, "wb") as file:
+                pickle.dump(self.tokenizer, file)
 
     def load_tokenizer(self, path: str) -> None:
-        with open(path, "rb") as file:
-            self.tokenizer = pickle.load(file)
+        if path.endswith(".json") or Path(path).suffix == ".json":
+            self.tokenizer = Tokenizer.load(path)
+        else:
+            with open(path, "rb") as file:
+                self.tokenizer = pickle.load(file)
 
     def save_weights(self, path: str) -> None:
         """
@@ -922,12 +979,18 @@ class Trainer:
                 "dropout": self.model.dropout,
             })
 
-        with open(path, "wb") as file:
-            pickle.dump(payload, file)
+        _save_weights_safe(path, payload)
 
     def load_weights(self, path: str) -> None:
-        with open(path, "rb") as file:
-            params = pickle.load(file)
+        source = Path(path)
+        if source.exists():
+            try:
+                params = _load_weights_safe(str(source))
+            except Exception:
+                with open(path, "rb") as file:
+                    params = pickle.load(file)
+        else:
+            raise FileNotFoundError(f"File dei pesi non trovato: {path}")
 
         if not isinstance(params, dict):
             raise ValueError("File dei pesi non valido.")

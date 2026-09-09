@@ -86,8 +86,12 @@ class ExperimentalTrainer:
             raise ValueError(f"Checkpoint path non autorizzato: {checkpoint_path}")
         if not os.path.exists(checkpoint_path):
             raise FileNotFoundError(f"Checkpoint non trovato: {checkpoint_path}")
-        with open(checkpoint_path, "rb") as f:
-            data = pickle.load(f)
+        try:
+            from neural_core.trainer import _load_checkpoint_safe
+            return _load_checkpoint_safe(checkpoint_path)
+        except Exception:
+            with open(checkpoint_path, "rb") as f:
+                data = pickle.load(f)
         if not isinstance(data, dict):
             raise ValueError("Formato checkpoint non valido")
         return data

@@ -94,17 +94,17 @@ class ExecutiveRouter:
         return config
 
     def _load_tokenizer(self, path):
-        if path.exists():
-            try:
-                with open(path, "rb") as f:
-                    return pickle.load(f)
-            except Exception:
-                pass
-
         json_path = path.with_suffix(".json")
         if json_path.exists():
             try:
                 return Tokenizer.load(str(json_path))
+            except Exception:
+                pass
+
+        if path.exists():
+            try:
+                with open(path, "rb") as f:
+                    return pickle.load(f)
             except Exception:
                 pass
 

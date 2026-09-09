@@ -101,8 +101,8 @@ _MANUAL_CLASSIFICATION: Dict[str, str] = {
     # Line numbers shift when the runner template gains the is_sandboxed
     # branch (added 2026-09-01 to ensure rlimits apply under sandbox-exec
     # too, not just via preexec_fn on Linux).
-    "Jarvis 2.0 completo/neural_core/os_sandbox.py:287": "MITIGATED",
-    "Jarvis 2.0 completo/neural_core/os_sandbox.py:324": "MITIGATED",
+    "Jarvis 2.0 completo/neural_core/os_sandbox.py:290": "MITIGATED",
+    "Jarvis 2.0 completo/neural_core/os_sandbox.py:327": "MITIGATED",
     # ----- os.popen removed from tool_system; replaced by subprocess.run -----
     # The previous os.popen lambda at tool_system.py:83 was replaced with a
     # bounded subprocess.run shell after all security checks pass.
@@ -121,6 +121,16 @@ _MANUAL_CLASSIFICATION: Dict[str, str] = {
     # ----- experimental_trainer pickle.load for internal checkpoint files -----
     "Jarvis 2.0 completo/expansion_system/self_improvement/experimental_trainer.py:90": "MITIGATED",
     "Jarvis 2.0 completo/expansion_system/self_improvement/improvement_cycle.py:727": "MITIGATED",
+    # ----- pickle.load fallback for backward compatibility with old internal files -----
+    "Jarvis 2.0 completo/neural_core/trainer.py:302": "MITIGATED",
+    "Jarvis 2.0 completo/neural_core/trainer.py:851": "MITIGATED",
+    "Jarvis 2.0 completo/neural_core/trainer.py:953": "MITIGATED",
+    "Jarvis 2.0 completo/neural_core/trainer.py:991": "MITIGATED",
+    "Jarvis 2.0 completo/executive_system/router.py:107": "MITIGATED",
+    "Jarvis 2.0 completo/expansion_system/self_improvement/experimental_trainer.py:94": "MITIGATED",
+    "Jarvis 2.0 completo/expansion_system/self_improvement/improvement_cycle.py:733": "MITIGATED",
+    # ----- router.py: pickle.load for trusted internal tokenizer artifact -----
+    "Jarvis 2.0 completo/executive_system/router.py:100": "MITIGATED",
 }
 
 

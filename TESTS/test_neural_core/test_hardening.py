@@ -357,9 +357,9 @@ class TestBestVsLastCheckpoint:
         assert best_path.exists()
 
         # Il last checkpoint deve contenere lo stato dell'ultima epoca
-        import pickle
-        with open(last_path, "rb") as f:
-            last_state = pickle.load(f)
+        import json
+        with open(last_path, "r", encoding="utf-8") as f:
+            last_state = json.load(f)
         assert last_state["epoch"] == 2
 
     def test_best_checkpoint_contiene_best_validation_loss(self, tmp_path):

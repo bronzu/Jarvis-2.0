@@ -78,10 +78,10 @@ class ToolFactory:
             method_name = method.get("name")
             params = method.get("params", [])
             implementation = method.get("implementation", "pass")
-            param_list = ", ".join(["self"] + [f"{p}: Any" for p in params])
+            param_list = ", ".join(["self"] + list(params))
             lines.append(f"    def {method_name}({param_list}):")
             lines.append(f'        """{method_name} generata automaticamente"""')
-            lines.append(f"        {textwrap.indent(implementation, '    ')}")
+            lines.append(textwrap.indent(implementation, "        "))
             lines.append("")
 
         code = "\n".join(lines)

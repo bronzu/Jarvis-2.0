@@ -99,6 +99,10 @@
       "sha256": "0ff2f7b13e5deb9ee4b6774e45c4793a930a8b7efd216cce796daef3a2f7ef14",
       "size_bytes": 8717
     },
+    "DOCUMENTAZIONE/technical-acquisition-package/04_VERIFICATION_AND_TEST_AUDIT.md": {
+      "sha256": "c591392337c49eeeb45859b04faaf883987f65197eb2fec927056d6635103a14",
+      "size_bytes": 7222
+    },
     "DOCUMENTAZIONE/technical-acquisition-package/07_DIFFERENTIATION_AND_IP.md": {
       "sha256": "4556b0747ca0de251912de67f9e8c71e63a41f55269e29f9768c8b7d5edf52f7",
       "size_bytes": 10532
@@ -108,7 +112,7 @@
       "size_bytes": 13723
     },
     "DOCUMENTAZIONE/technical-acquisition-package/09_SECURITY_AND_AUTONOMY.md": {
-      "sha256": "171ed6bd12eaf6f71488b3840871816b4029eb1e4a9783aa8bd6b8f9e7d6d29d",
+      "sha256": "3368301f2c0386fd3e8395f18e00d307d61b189b53981007ffbb0c0d0bbba26a",
       "size_bytes": 7222
     },
     "DOCUMENTAZIONE/technical-acquisition-package/11_ACQUISITION_DUE_DILIGENCE_CHECKLIST.md": {
@@ -120,7 +124,7 @@
       "size_bytes": 7700
     },
     "DOCUMENTAZIONE/technical-acquisition-package/14_ACQUISITION_DATA_ROOM_INDEX.md": {
-      "sha256": "a4ee8066e4b1948f974e3b07a20af73d3f797fe4270b73dc93dbd95d4fe2f49a",
+      "sha256": "4b04f8281218ffd02b2640884dc3026d5ef3ad67873139755f869d974a221c8b",
       "size_bytes": 21989
     },
     "DOCUMENTAZIONE/technical-acquisition-package/15_IP_OWNERSHIP_AND_PROVENANCE.md": {
@@ -128,7 +132,7 @@
       "size_bytes": 11265
     },
     "DOCUMENTAZIONE/technical-acquisition-package/16_DATASET_CORPUS_PROVENANCE.md": {
-      "sha256": "264d374e81be04154c9b7b31e00ec4dd11f648c40d47dfec80b65e20846131ee",
+      "sha256": "b4647b35580637c490bf04fc78faecfd42c66cf0d49569decb0f1072abd19220",
       "size_bytes": 9694
     },
     "DOCUMENTAZIONE/technical-acquisition-package/17_MODEL_TRAINING_PROVENANCE.md": {

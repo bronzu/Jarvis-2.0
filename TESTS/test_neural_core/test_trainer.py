@@ -349,6 +349,7 @@ def test_load_checkpoint_rifiuta_architettura_diversa(tmp_path):
     trainer = _transformer_trainer(tokenizer)
     checkpoint_path = tmp_path / "transformer.pkl"
     trainer.save_checkpoint(str(checkpoint_path))
+    assert checkpoint_path.exists()
 
     altro_modello = NextTokenModel(vocab_size=len(tokenizer.vocabulary), embedding_dim=8)
     altro = Trainer(altro_modello, tokenizer, CrossEntropyLoss(), Adam())

@@ -23,15 +23,17 @@ class MemoryManager:
     - When items expire: Removed on next access or cleanup
     """
 
-    def __init__(self, max_items=10000, ttl_seconds=3600, disk_path=None):
+    def __init__(self, max_items=10000, ttl_seconds=3600, disk_path=None, sync_to_disk=True):
         self._lock = threading.RLock()
         self._store = OrderedDict()  # Maintains insertion order for LRU
         self._timestamps = {}  # Track creation time for TTL
         self._max_items = max_items
         self._ttl_seconds = ttl_seconds
         self._eviction_count = 0  # Track evictions for monitoring
-        self._disk_path = disk_path or os.path.join(os.path.dirname(__file__), "memory_db.json")
-        self.load_state_from_disk()
+        self._disk_path = disk_path
+        self._sync_to_disk = sync_to_disk
+        if self._disk_path:
+            self.load_state_from_disk()
 
     def store(self, item_id, payload):
         """Store item with TTL and eviction if needed."""
@@ -44,8 +46,14 @@ class MemoryManager:
             self._timestamps[item_id] = time.time()
             
             result = dict(self._store[item_id])
-            self.save_state_to_disk()
+            if self._sync_to_disk:
+                self.save_state_to_disk()
             return result
+
+    def sync(self):
+        """Explicitly persist current state to disk."""
+        if self._disk_path:
+            self.save_state_to_disk()
 
     def get(self, item_id):
         """Retrieve item, checking if it has expired."""
@@ -115,6 +123,8 @@ class MemoryManager:
 
     def save_state_to_disk(self):
         """Save memory state to disk in a thread-safe manner."""
+        if not self._disk_path:
+            return
         with self._lock:
             state = {
                 "store": dict(self._store),
@@ -128,6 +138,8 @@ class MemoryManager:
 
     def load_state_from_disk(self):
         """Load memory state from disk in a thread-safe manner."""
+        if not self._disk_path:
+            return
         with self._lock:
             if not os.path.exists(self._disk_path):
                 return

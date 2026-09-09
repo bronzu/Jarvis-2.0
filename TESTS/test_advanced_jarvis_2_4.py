@@ -54,7 +54,7 @@ class TestMemoryManagerStress:
 
     def test_semantic_search_latency_under_load(self):
         """Misura latenza di ricerca semantica con 10k+ elementi."""
-        manager = MemoryManager()
+        manager = MemoryManager(sync_to_disk=False)
 
         # Popola con 5000 elementi
         for i in range(5000):
@@ -81,7 +81,7 @@ class TestMemoryManagerStress:
 
     def test_memory_contention_with_repeated_updates(self):
         """Test contention con aggiornamenti ripetuti dello stesso elemento."""
-        manager = MemoryManager()
+        manager = MemoryManager(sync_to_disk=False)
         manager.store("contention_test", {"count": 0})
 
         def increment_worker():
