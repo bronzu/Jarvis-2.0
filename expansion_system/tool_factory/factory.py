@@ -52,17 +52,8 @@ class ToolFactory:
         if not methods:
             raise ValueError("tool_spec.methods non può essere vuoto")
 
-        imports = {"os", "re", "typing"}
-        for method in methods:
-            try:
-                tree = ast.parse(method.get("implementation", ""))
-            except Exception:
-                raise ValueError(f"Implementazione non valida per {method.get('name')}")
-
         class_name = "".join(part.capitalize() for part in str(name).strip().split("_")) + "Tool"
         lines = [
-            "import os",
-            "import re",
             "from typing import Any, Dict, Optional",
             "",
             "",
@@ -96,15 +87,53 @@ class ToolFactory:
         return code
 
     def validate_generated(self, code: str) -> Dict[str, Any]:
-        """Verifica che il codice generato sia sintatticamente valido e non contenga pattern pericolosi."""
+        """Verifica che il codice generato sia sintatticamente valido e non contenga pattern pericolosi.
+
+        Uses AST-based detection to resist string-concatenation obfuscation.
+        """
         dangerous = ["__import__", "os.system", "subprocess", "eval(", "exec(", "compile("]
         try:
-            ast.parse(code)
+            tree = ast.parse(code)
         except SyntaxError as e:
             return {"valid": False, "error": f"SyntaxError: {e}"}
 
+        # Substring check (first line of defense)
         for pattern in dangerous:
             if pattern in code:
                 return {"valid": False, "error": f"Pattern pericoloso rilevato: {pattern}"}
+
+        # AST-based check: detect dangerous calls and imports regardless of
+        # string obfuscation (e.g. getattr(__builtins__, '__imp'+'ort__'))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    top = alias.name.split(".")[0]
+                    if top in ("os", "subprocess", "sys", "shutil", "ctypes",
+                               "marshal", "pickle", "shelve", "commands", "pty"):
+                        return {"valid": False, "error": f"Import non consentito: {alias.name}"}
+            elif isinstance(node, ast.ImportFrom):
+                if node.module and node.module.split(".")[0] in ("os", "subprocess", "sys",
+                    "shutil", "ctypes", "marshal", "pickle", "shelve", "commands", "pty"):
+                    return {"valid": False, "error": f"Import non consentito: {node.module}"}
+            elif isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Attribute):
+                    if isinstance(func.value, ast.Name) and func.value.id == "os":
+                        if func.attr in ("system", "popen", "spawn", "unlink", "remove",
+                                        "chmod", "chown", "execv", "execve"):
+                            return {"valid": False, "error": f"Chiamata os non consentita: os.{func.attr}"}
+                    if isinstance(func.value, ast.Name) and func.value.id == "subprocess":
+                        return {"valid": False, "error": "Chiamata subprocess non consentita"}
+                    if func.attr == "system" and isinstance(func.value, ast.Name) and func.value.id == "os":
+                        return {"valid": False, "error": "Chiamata os.system non consentita"}
+                if isinstance(func, ast.Name) and func.id in ("eval", "exec", "compile", "__import__"):
+                    return {"valid": False, "error": f"Funzione pericolosa: {func.id}"}
+                # Block getattr to prevent indirect access to dangerous functions
+                if isinstance(func, ast.Name) and func.id == "getattr":
+                    return {"valid": False, "error": "Chiamata getattr non consentita"}
+            elif isinstance(node, ast.Subscript):
+                # Block __builtins__[...] access
+                if isinstance(node.value, ast.Name) and node.value.id == "__builtins__":
+                    return {"valid": False, "error": "Accesso a __builtins__ non consentito"}
 
         return {"valid": True, "error": None}
