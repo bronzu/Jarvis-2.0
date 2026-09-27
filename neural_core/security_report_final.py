@@ -51,6 +51,9 @@ _MANUAL_CLASSIFICATION: Dict[str, str] = {
     "Jarvis 2.0 completo/INFRASTRUCTURE/audit/audit_system.py:16": "SAFE",
     "Jarvis 2.0 completo/INFRASTRUCTURE/audit/audit_system.py:17": "SAFE",
     "Jarvis 2.0 completo/INFRASTRUCTURE/audit/audit_system.py:18": "SAFE",
+    "Jarvis 2.0 completo/cognitive_layer/algorithmic_verifier.py:184": "SAFE",
+    "Jarvis 2.0 completo/cognitive_layer/algorithmic_verifier.py:188": "SAFE",
+    "Jarvis 2.0 completo/cognitive_layer/algorithmic_verifier.py:194": "SAFE",
     # ----- __import__ with literal string (no user input) -----
     "Jarvis 2.0 completo/neural_core/final_benchmark.py:150": "SAFE",
     "Jarvis 2.0 completo/neural_core/memory_estimation.py:135": "SAFE",
