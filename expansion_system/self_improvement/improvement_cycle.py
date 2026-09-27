@@ -554,6 +554,12 @@ class ImprovementCycle:
             if not validation.get("valid"):
                 validations.append({"candidate_id": candidate_id, "status": "invalid", "reason": "invalid_checkpoint", "error": validation.get("error")})
                 continue
+
+            # Verifica della ritenzione (Continual Learning): la loss sui dati
+            # di baseline non deve degradarsi più del 2% rispetto al checkpoint
+            # di partenza. Usiamo BenchmarkComparator per misurare la regressione.
+            retention = self._check_retention(candidate_id, training_result)
+
             candidate = self.candidate_builder.get(candidate_id)
             if candidate:
                 self.candidate_builder.record_checkpoint(candidate_id, {
@@ -561,6 +567,7 @@ class ImprovementCycle:
                     "lineage": training_result.get("lineage"),
                     "validation": validation,
                     "training_metrics": training_result.get("metrics"),
+                    "retention": retention,
                 })
             validations.append({
                 "candidate_id": candidate_id,
@@ -569,8 +576,59 @@ class ImprovementCycle:
                 "checkpoint_path": checkpoint_path,
                 "validation": validation,
                 "training_metrics": training_result.get("metrics"),
+                "retention": retention,
             })
         return {"status": "completed", "validations": validations}
+
+    def _check_retention(self, candidate_id: str, training_result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Verifica che la loss sui dati di baseline non abbia subito un degrado
+        superiore al 2% (soglia di Catastrophic Forgetting). Restituisce un
+        report con i dati di baseline, la loss corrente e la variazione percentuale.
+        """
+        report = {
+            "candidate_id": candidate_id,
+            "threshold_pct": 2.0,
+            "baseline_loss": None,
+            "current_loss": None,
+            "delta_pct": None,
+            "within_threshold": True,
+            "measured": False,
+        }
+        baseline = self._baseline_benchmark or {}
+        baseline_loss = None
+        if isinstance(baseline, dict):
+            baseline_loss = baseline.get("loss") or baseline.get("validation_loss") or baseline.get("baseline_loss")
+        if baseline_loss is None:
+            baseline_metrics = baseline.get("metrics") if isinstance(baseline, dict) else None
+            if isinstance(baseline_metrics, dict):
+                baseline_loss = baseline_metrics.get("loss") or baseline_metrics.get("validation_loss")
+        if baseline_loss is None:
+            return report
+
+        metrics = training_result.get("metrics") or {}
+        current_loss = metrics.get("final_validation_loss") or metrics.get("validation_loss")
+        if current_loss is None:
+            return report
+
+        try:
+            baseline_f = float(baseline_loss)
+            current_f = float(current_loss)
+        except (TypeError, ValueError):
+            return report
+
+        if baseline_f <= 0:
+            return report
+
+        delta_pct = ((current_f - baseline_f) / baseline_f) * 100.0
+        report.update({
+            "baseline_loss": baseline_f,
+            "current_loss": current_f,
+            "delta_pct": delta_pct,
+            "within_threshold": delta_pct <= report["threshold_pct"],
+            "measured": True,
+        })
+        return report
 
     def _phase_benchmark_after(self, checkpoint_validation: Dict[str, Any]) -> Dict[str, Any]:
         validations = checkpoint_validation.get("validations", [])

@@ -360,7 +360,8 @@ class Trainer:
     CHECKPOINT_VERSION = 1
 
     def __init__(self, model, tokenizer, loss, optimizer, scheduler=None,
-                 gradient_accumulation_steps: int = 1, max_grad_norm=None, seed=None):
+                 gradient_accumulation_steps: int = 1, max_grad_norm=None, seed=None,
+                 ewc_lambda: float = 0.5):
         if gradient_accumulation_steps < 1:
             raise ValueError("gradient_accumulation_steps deve essere almeno 1.")
         if max_grad_norm is not None and max_grad_norm <= 0:
@@ -374,11 +375,305 @@ class Trainer:
         self.gradient_accumulation_steps = int(gradient_accumulation_steps)
         self.max_grad_norm = max_grad_norm
         self.seed = seed
+        self.ewc_lambda = float(ewc_lambda)
+
+        # Elastic Weight Consolidation (EWC) state
+        self.fisher_matrix = None   # dict: param_name -> np.ndarray (Fisher info)
+        self.optimal_weights = None # dict: param_name -> np.ndarray (W_A snapshot)
 
         self.global_step = 0
         self.epoch = 0
         self.best_validation_loss = float("inf")
         self.history: List[dict] = []
+
+        # Episodic replay buffer: list of (inputs, targets) tuples
+        self.replay_buffer = None
+
+    # ------------------------------------------------------------------
+    # Elastic Weight Consolidation (EWC) & Continual Learning
+    # ------------------------------------------------------------------
+
+    def _all_param_names(self):
+        """Mappa i nomi di TUTTI i parametri del modello alle chiavi di EWC."""
+        if hasattr(self.model, "named_parameters"):
+            try:
+                return list(self.model.named_parameters().keys())
+            except Exception:
+                pass
+        params = self.model.get_parameters()
+        return [f"param_{i}" for i in range(len(params))]
+
+    def _fisher_param_names(self):
+        """
+        Restituisce la lista dei nomi dei parametri per la Fisher matrix.
+
+        Con LoRA attivo (modello con `trainable_param_names`), restituisce SOLO
+        i nomi dei parametri addestrabili (le matrici LoRA A/B). I parametri
+        congelati (2.7M) non entrano mai nella Fisher matrix, riducendone il
+        costo di >90% rispetto alla versione full-parameter.
+        """
+        if hasattr(self.model, "trainable_param_names"):
+            try:
+                names = self.model.trainable_param_names()
+                if names:
+                    return names
+            except Exception:
+                pass
+        if hasattr(self.model, "named_parameters"):
+            try:
+                return list(self.model.named_parameters().keys())
+            except Exception:
+                pass
+        params = self.model.get_parameters()
+        return [f"param_{i}" for i in range(len(params))]
+
+    def _trainable_indices(self):
+        """Indici in `get_parameters()` dei parametri addestrabili."""
+        if hasattr(self.model, "trainable_param_indices"):
+            try:
+                return list(self.model.trainable_param_indices())
+            except Exception:
+                pass
+        return list(range(len(self.model.get_parameters())))
+
+    def compute_fisher_matrix(self, dataset, num_samples=100):
+        """
+        Calcola la Micro-Fisher Matrix sul SOLE spazio dei parametri
+        addestrabili (matrici LoRA A/B).
+
+        I gradienti del log-likelihood vengono accumulati come quadrati e
+        normalizzati su `num_samples`. I parametri congelati (embedding,
+        attention, LayerNorm, output) non vengono calcolati: la loro importanza
+        è fissata dai pesi pre-addestrati e non deve essere penalizzata.
+
+        Salva i pesi attuali in `self.optimal_weights` e la Fisher in
+        `self.fisher_matrix` (solo per i parametri addestrabili).
+        """
+        if dataset is None:
+            raise ValueError("dataset è richiesto per calcolare la Fisher matrix.")
+
+        inputs, targets = self._dataset_components(dataset)
+        inputs = np.asarray(inputs)
+        targets = np.asarray(targets)
+        n = len(inputs)
+        if n == 0:
+            raise ValueError("Il dataset per la Fisher matrix non può essere vuoto.")
+
+        sample_count = min(int(num_samples), n)
+        indices = np.arange(n)
+        if self.seed is not None:
+            rng = np.random.RandomState(self.seed)
+            rng.shuffle(indices)
+        else:
+            np.random.shuffle(indices)
+        indices = indices[:sample_count]
+
+        trainable_idx = self._trainable_indices()
+        param_names = self._fisher_param_names()
+
+        # Accumulatore: somma dei quadrati dei gradienti per ogni parametro addestrabile
+        fisher_accum = None
+
+        for idx in indices:
+            if inputs.ndim >= 2:
+                batch_inputs = inputs[idx:idx + 1]
+                batch_targets = targets[idx:idx + 1]
+            else:
+                batch_inputs = np.array([inputs[idx]])
+                batch_targets = np.array([targets[idx]])
+
+            logits = self.model.forward(batch_inputs, training=False)
+            loss_value = float(self.loss.forward(logits, batch_targets))
+            probs = getattr(self.loss, "get_probabilities", lambda: None)()
+            if probs is not None:
+                gradients = self.model.backward(batch_targets, probs=probs)
+            else:
+                gradients = self.model.backward(batch_targets)
+
+            gradients = [np.asarray(g, dtype=float) for g in gradients]
+            # Riduci ai soli parametri addestrabili
+            trainable_grads = [gradients[i] for i in trainable_idx]
+            if fisher_accum is None:
+                fisher_accum = [np.square(g) for g in trainable_grads]
+            else:
+                for i in range(len(fisher_accum)):
+                    fisher_accum[i] += np.square(trainable_grads[i])
+
+        if fisher_accum is None:
+            raise ValueError("Impossibile accumulare gradienti per la Fisher matrix.")
+
+        # Salva i pesi ottimali correnti (solo i parametri addestrabili)
+        all_params = self.model.get_parameters()
+        self.optimal_weights = {
+            name: np.asarray(all_params[i]).copy()
+            for i, name in zip(trainable_idx, param_names)
+        }
+
+        # Normalizza e memorizza la Micro-Fisher matrix
+        self.fisher_matrix = {
+            name: fisher_accum[i] / float(sample_count)
+            for i, name in enumerate(param_names)
+        }
+
+        # Ricorda su quale task e' stata ancorata la Fisher, per poter
+        # ri-ancorarla automaticamente quando viene registrato un nuovo task.
+        self._ewc_anchor_task = getattr(self.model, "active_task", None)
+
+        return self.fisher_matrix
+
+    def _ensure_ewc_anchor(self):
+        """
+        Ri-ancora la Micro-Fisher al task attivo se il task e' cambiato.
+
+        Con il design a adapter per-task, quando si registra un nuovo task il
+        suo adapter parte dai pesi dell'adapter precedente (warm start). La
+        Fisher calcolata sul task precedente vive nello stesso spazio di
+        parametri (stesse matrici A/B, stesso rango) e puo' quindi vincolare
+        direttamente il nuovo adapter: e' esattamente l'ipotesi
+        theta_{k+1} = theta_k su cui si basa l'EWC full-parameter, proiettata
+        nello spazio LoRA.
+
+        Senza questa ri-ancoratura i nomi della Fisher (riferiti al task
+        precedente) non corrisponderebbero ai nomi dei parametri addestrabili
+        del nuovo task e la penalita' sarebbe silenziosamente nulla.
+        """
+        if self.fisher_matrix is None or self.optimal_weights is None:
+            return
+        current_task = getattr(self.model, "active_task", None)
+        anchor_task = getattr(self, "_ewc_anchor_task", None)
+        if current_task is None or anchor_task is None or current_task == anchor_task:
+            return
+
+        old_names = list(self.fisher_matrix.keys())
+        new_names = self._fisher_param_names()
+        if len(old_names) != len(new_names):
+            # Spazi di parametri diversi: la Fisher precedente non e' trasferibile.
+            self.fisher_matrix = None
+            self.optimal_weights = None
+            self._ewc_anchor_task = None
+            return
+
+        all_params = self.model.get_parameters()
+        trainable_idx = self._trainable_indices()
+        self.fisher_matrix = dict(zip(new_names, self.fisher_matrix.values()))
+        # L'ancoraggio e' il punto di partenza del nuovo adapter, che per il
+        # warm start coincide con l'ottimo del task precedente.
+        self.optimal_weights = {
+            name: np.asarray(all_params[i]).copy()
+            for name, i in zip(new_names, trainable_idx)
+        }
+        self._ewc_anchor_task = current_task
+
+    def _dataset_components(self, dataset):
+        """Estrae inputs e targets da un Dataset o da una tupla (inputs, targets)."""
+        if hasattr(dataset, "get_inputs") and hasattr(dataset, "get_targets"):
+            return dataset.get_inputs(), dataset.get_targets()
+        if isinstance(dataset, (tuple, list)) and len(dataset) == 2:
+            return np.asarray(dataset[0]), np.asarray(dataset[1])
+        raise ValueError("Dataset non riconosciuto per la Fisher matrix.")
+
+    def _compute_ewc_loss(self):
+        """
+        Calcola la penalità Micro-EWC corrente (0 se non c'è Fisher matrix).
+
+        La penalità è applicata ESCLUSIVAMENTE sui parametri addestrabili
+        (matrici LoRA A/B). I parametri congelati non sono penalizzati.
+        """
+        if self.fisher_matrix is None or self.optimal_weights is None:
+            return 0.0
+        ewc_loss = 0.0
+        param_names = self._fisher_param_names()
+        all_params = self.model.get_parameters()
+        trainable_idx = self._trainable_indices()
+        for name, idx in zip(param_names, trainable_idx):
+            if name in self.fisher_matrix and name in self.optimal_weights:
+                fisher = self.fisher_matrix[name]
+                opt_weight = self.optimal_weights[name]
+                current = np.asarray(all_params[idx])
+                ewc_loss += float((fisher * (current - opt_weight) ** 2).sum())
+        return ewc_loss
+
+    def set_replay_buffer(self, replay_buffer):
+        """
+        Imposta il buffer di replay episodico per il continual learning.
+        `replay_buffer` deve essere una lista di tuple (inputs, targets).
+        """
+        if replay_buffer is None:
+            self.replay_buffer = None
+            return
+        if not isinstance(replay_buffer, (list, tuple)):
+            raise ValueError("replay_buffer deve essere una lista di tuple (inputs, targets).")
+        self.replay_buffer = list(replay_buffer)
+
+    def _sample_replay(self, current_inputs, current_targets, replay_ratio=0.2,
+                       replay_buffer=None):
+        """
+        Miscela dati attuali con campioni dal replay buffer.
+
+        Restituisce (inputs, targets) miscelati con un rapporto
+        `replay_ratio` di dati provenienti dal buffer.
+
+        Args:
+            replay_buffer: buffer da usare per questo batch. Se `None`, si
+                ripiega su `self.replay_buffer` impostato da `set_replay_buffer`.
+                Senza questo fallback il parametro `replay_buffer` passato a
+                `train()` / `train_step()` veniva ignorato e il replay
+                episodico non veniva mai applicato.
+        """
+        buffer = replay_buffer if replay_buffer is not None else self.replay_buffer
+        if not buffer:
+            return current_inputs, current_targets
+
+        n_current = len(current_inputs)
+        n_replay = max(1, int(round(n_current * replay_ratio / (1.0 - replay_ratio))))
+        n_replay = min(n_replay, len(buffer))
+
+        if self.seed is not None:
+            rng = np.random.RandomState(self.seed + self.global_step)
+        else:
+            rng = np.random
+
+        indices = rng.choice(len(buffer), size=n_replay, replace=True)
+        replay_inputs = []
+        replay_targets = []
+        current_inputs_arr = np.asarray(current_inputs)
+        current_ndim = current_inputs_arr.ndim
+        for idx in indices:
+            r_inputs, r_targets = buffer[int(idx)]
+            r_inputs = np.asarray(r_inputs)
+            r_targets = np.asarray(r_targets)
+            # Un campione del buffer puo' essere una singola sequenza 1-D
+            # (context_size,) mentre il batch corrente e' 2-D (batch, seq).
+            # Senza questa normalizzazione il controllo di ndim scartava
+            # TUTTI i campioni e il replay episodico non avveniva mai.
+            if r_inputs.ndim == current_ndim - 1:
+                r_inputs = np.expand_dims(r_inputs, axis=0)
+                r_targets = np.expand_dims(r_targets, axis=0)
+            if r_inputs.ndim != current_ndim or r_targets.ndim != r_inputs.ndim:
+                continue
+            if r_inputs.shape[1:] != current_inputs_arr.shape[1:]:
+                continue
+            replay_inputs.append(r_inputs)
+            replay_targets.append(r_targets)
+
+        if not replay_inputs:
+            return current_inputs, current_targets
+
+        try:
+            replay_inputs = np.concatenate(replay_inputs, axis=0)
+            replay_targets = np.concatenate(replay_targets, axis=0)
+        except ValueError:
+            return current_inputs, current_targets
+
+        mixed_inputs = np.concatenate([current_inputs, replay_inputs], axis=0)
+        mixed_targets = np.concatenate([current_targets, replay_targets], axis=0)
+
+        perm = np.arange(len(mixed_inputs))
+        if self.seed is not None:
+            np.random.RandomState(self.seed + self.global_step).shuffle(perm)
+        else:
+            np.random.shuffle(perm)
+        return mixed_inputs[perm], mixed_targets[perm]
 
     # ------------------------------------------------------------------
     # Costruzione da corpus
@@ -561,10 +856,41 @@ class Trainer:
         return learning_rate
 
     def _apply_update(self, gradients):
+        """
+        Applica un aggiornamento ai parametri del modello tramite l'ottimizzatore.
+
+        Con LoRA attivo, l'ottimizzatore riceve esclusivamente il sottoinsieme
+        dei parametri addestrabili (le matrici A/B dell'adapter del task
+        attivo) e i relativi gradienti. I parametri congelati non vengono
+        neppure passati all'ottimizzatore, quindi non possono essere spostati
+        dai momenti `m`/`v` di Adam.
+
+        Questo e' necessario perche' la registrazione di un nuovo task cambia
+        la lunghezza della lista completa dei parametri: i momenti dell'ottimizzatore
+        riuserebbero altrimenti a non combaciare. L'ordinamento del sottoinsieme
+        addestrabile (A, B per ogni layer, nell'ordine dei layer) e' invece
+        stabile tra un task e l'altro, quindi lo stato dell'ottimizzatore resta
+        valido e riutilizzabile.
+
+        Modelli senza LoRA seguono esattamente il comportamento legacy
+        full-parameter.
+        """
         gradients, _ = self._clip_gradients(gradients)
         self._current_learning_rate()
         parameters = self.model.get_parameters()
-        updated = self.optimizer.update(parameters, gradients)
+        trainable_idx = self._trainable_indices()
+
+        if len(trainable_idx) == len(parameters):
+            # Nessun parametro congelato: percorso legacy invariato.
+            updated = self.optimizer.update(parameters, gradients)
+        else:
+            trainable_params = [parameters[i] for i in trainable_idx]
+            trainable_grads = [gradients[i] for i in trainable_idx]
+            updated_trainable = self.optimizer.update(trainable_params, trainable_grads)
+            updated = list(parameters)
+            for pos, i in enumerate(trainable_idx):
+                updated[i] = updated_trainable[pos]
+
         self.model.set_parameters(updated)
         self.global_step += 1
 
@@ -572,25 +898,73 @@ class Trainer:
     # Step di training
     # ------------------------------------------------------------------
 
-    def train_step(self, batch_inputs, batch_targets) -> float:
+    def train_step(self, batch_inputs, batch_targets, replay_buffer=None) -> float:
         """
         Un singolo step di training (forward + backward + update immediato).
 
+        Args:
+            batch_inputs, batch_targets: batch corrente.
+            replay_buffer: opzionale buffer di replay episodico; se fornito,
+                i dati vengono miscelati con un 20% di campioni dal buffer.
+
         Returns:
-            La loss del batch.
+            La loss del batch (comprensiva di eventuale penalità EWC).
         """
+        self._ensure_ewc_anchor()
+        if replay_buffer is not None or self.replay_buffer:
+            batch_inputs, batch_targets = self._sample_replay(
+                batch_inputs, batch_targets, replay_ratio=0.2,
+                replay_buffer=replay_buffer,
+            )
+
         input_ids, target_ids = self._prepare_batch(batch_inputs, batch_targets)
         logits = self.model.forward(input_ids, training=True)
         loss_value = float(self.loss.forward(logits, target_ids))
+        ewc_loss = self._compute_ewc_loss()
+        total_loss = loss_value + (self.ewc_lambda / 2.0) * ewc_loss
+
         probs = getattr(self.loss, "get_probabilities", lambda: None)()
         if probs is not None:
             gradients = self.model.backward(target_ids, probs=probs)
         else:
             gradients = self.model.backward(target_ids)
-        self._apply_update([np.asarray(g, dtype=float) for g in gradients])
-        return loss_value
 
-    def _run_epoch(self, inputs, targets, batch_size, training=True, shuffle=True):
+        # Aggiungi il gradiente della penalità EWC ai gradienti del modello
+        if ewc_loss > 0.0:
+            ewc_gradients = self._compute_ewc_gradients()
+            gradients = [g + eg for g, eg in zip(gradients, ewc_gradients)]
+
+        self._apply_update([np.asarray(g, dtype=float) for g in gradients])
+        return total_loss
+
+    def _compute_ewc_gradients(self):
+        """
+        Calcola il gradiente della penalità Micro-EWC rispetto ai parametri
+        del modello.
+
+        d/dW [ (lambda/2) * sum F * (W - W_A)^2 ] = lambda * F * (W - W_A)
+
+        applicato SOLO ai parametri addestrabili (matrici LoRA A/B).
+        I parametri congelati ricevono gradiente zero.
+        """
+        if self.fisher_matrix is None or self.optimal_weights is None:
+            return []
+        all_params = self.model.get_parameters()
+        trainable_idx = self._trainable_indices()
+        param_names = self._fisher_param_names()
+
+        ewc_gradients = [np.zeros_like(np.asarray(p)) for p in all_params]
+        for name, idx in zip(param_names, trainable_idx):
+            if name in self.fisher_matrix and name in self.optimal_weights:
+                fisher = self.fisher_matrix[name]
+                opt_weight = self.optimal_weights[name]
+                diff = np.asarray(all_params[idx]) - opt_weight
+                ewc_gradients[idx] = self.ewc_lambda * fisher * diff
+        return ewc_gradients
+
+    def _run_epoch(self, inputs, targets, batch_size, training=True, shuffle=True, replay_buffer=None):
+        if training:
+            self._ensure_ewc_anchor()
         input_ids, target_ids = self._prepare_batch(inputs, targets)
         n_samples = len(input_ids)
 
@@ -616,9 +990,18 @@ class Trainer:
             batch_inputs = input_ids[batch_idx]
             batch_targets = target_ids[batch_idx]
 
+            # Miscela episodica replay (80% dati nuovi, 20% dal buffer)
+            if training and (replay_buffer is not None or self.replay_buffer):
+                batch_inputs, batch_targets = self._sample_replay(
+                    batch_inputs, batch_targets, replay_ratio=0.2,
+                    replay_buffer=replay_buffer,
+                )
+
             logits = self.model.forward(batch_inputs, training=training)
             loss_value = float(self.loss.forward(logits, batch_targets))
-            epoch_losses.append(loss_value)
+            ewc_loss = self._compute_ewc_loss() if training else 0.0
+            total_loss = loss_value + (self.ewc_lambda / 2.0) * ewc_loss
+            epoch_losses.append(total_loss)
 
             if training and (position + 1) % 10 == 0:
                 avg_loss = sum(epoch_losses[-10:]) / len(epoch_losses[-10:])
@@ -635,6 +1018,13 @@ class Trainer:
                 gradients = self.model.backward(batch_targets, probs=probs)
             else:
                 gradients = self.model.backward(batch_targets)
+
+            # Aggiungi il gradiente della penalità EWC
+            if self.fisher_matrix is not None and self.optimal_weights is not None:
+                ewc_gradients = self._compute_ewc_gradients()
+                if len(ewc_gradients) == len(gradients):
+                    gradients = [g + eg for g, eg in zip(gradients, ewc_gradients)]
+
             accumulated = self._accumulate_gradients(
                 accumulated, gradients, 1.0
             )
@@ -649,7 +1039,8 @@ class Trainer:
 
         return sum(epoch_losses) / len(epoch_losses)
 
-    def train(self, inputs, targets, epochs: int = 1, batch_size: int = 64) -> List[float]:
+    def train(self, inputs, targets, epochs: int = 1, batch_size: int = 64,
+              replay_buffer=None) -> List[float]:
         if len(inputs) != len(targets):
             raise ValueError("Inputs e targets devono avere la stessa lunghezza.")
 
@@ -658,7 +1049,10 @@ class Trainer:
 
         history = []
         for _ in range(epochs):
-            average_loss = self._run_epoch(inputs, targets, batch_size, training=True)
+            average_loss = self._run_epoch(
+                inputs, targets, batch_size, training=True,
+                replay_buffer=replay_buffer,
+            )
             history.append(average_loss)
             self.epoch += 1
 
@@ -686,6 +1080,8 @@ class Trainer:
         last_checkpoint_path: Optional[str] = None,
         resume_path: Optional[str] = None,
         on_epoch_end=None,
+        replay_buffer=None,
+        ewc_lambda: Optional[float] = None,
     ) -> List[dict]:
         if len(training_inputs) != len(training_targets):
             raise ValueError("Training inputs e targets devono avere la stessa lunghezza.")
@@ -702,6 +1098,9 @@ class Trainer:
         if epochs < 1:
             raise ValueError("epochs deve essere almeno 1.")
 
+        if ewc_lambda is not None:
+            self.ewc_lambda = float(ewc_lambda)
+
         if resume_path is not None:
             self.load_checkpoint(resume_path)
 
@@ -710,7 +1109,10 @@ class Trainer:
         patience_counter = 0
 
         for _ in range(epochs):
-            train_loss = self._run_epoch(training_inputs, training_targets, batch_size, training=True)
+            train_loss = self._run_epoch(
+                training_inputs, training_targets, batch_size, training=True,
+                replay_buffer=replay_buffer,
+            )
             val_loss = self.evaluate(validation_inputs, validation_targets, batch_size=batch_size)
             self.epoch += 1
 
@@ -719,6 +1121,7 @@ class Trainer:
                 "training_loss": train_loss,
                 "validation_loss": val_loss,
                 "learning_rate": getattr(self.optimizer, "learning_rate", None),
+                "ewc_loss": self._compute_ewc_loss(),
             }
             history.append(entry)
             self.history.append(entry)
@@ -796,6 +1199,26 @@ class Trainer:
 
     def state_dict(self) -> dict:
         """Stato completo del training, sufficiente per il resume."""
+        ewc_state = None
+        if self.fisher_matrix is not None or self.optimal_weights is not None:
+            ewc_state = {
+                "ewc_lambda": self.ewc_lambda,
+                "fisher_matrix": (
+                    {k: np.asarray(v).tolist() for k, v in self.fisher_matrix.items()}
+                    if self.fisher_matrix is not None else None
+                ),
+                "optimal_weights": (
+                    {k: np.asarray(v).tolist() for k, v in self.optimal_weights.items()}
+                    if self.optimal_weights is not None else None
+                ),
+                "param_names": self._fisher_param_names(),
+            }
+        replay_payload = None
+        if self.replay_buffer is not None:
+            replay_payload = [
+                [np.asarray(inp).tolist(), np.asarray(tgt).tolist()]
+                for inp, tgt in self.replay_buffer
+            ]
         return {
             "format": self.CHECKPOINT_FORMAT,
             "version": self.CHECKPOINT_VERSION,
@@ -821,6 +1244,8 @@ class Trainer:
                 if self.tokenizer is not None and hasattr(self.tokenizer, "state_dict")
                 else None
             ),
+            "ewc_state": ewc_state,
+            "replay_buffer": replay_payload,
         }
 
     def save_checkpoint(self, path) -> str:
@@ -928,6 +1353,47 @@ class Trainer:
         self.epoch = int(state.get("epoch", 0))
         self.best_validation_loss = state.get("best_validation_loss", float("inf"))
         self.history = list(state.get("history") or [])
+
+        # Ripristina lo stato EWC (Fisher matrix + optimal weights) se presente
+        ewc_state = state.get("ewc_state")
+        if isinstance(ewc_state, dict):
+            if ewc_state.get("ewc_lambda") is not None:
+                self.ewc_lambda = float(ewc_state["ewc_lambda"])
+            fisher_data = ewc_state.get("fisher_matrix")
+            opt_data = ewc_state.get("optimal_weights")
+            param_names = ewc_state.get("param_names") or self._fisher_param_names()
+            if isinstance(fisher_data, dict):
+                self.fisher_matrix = {
+                    name: np.asarray(fisher_data[name], dtype=float)
+                    for name in param_names
+                    if name in fisher_data
+                }
+            elif isinstance(fisher_data, list):
+                self.fisher_matrix = {
+                    name: np.asarray(fisher_data[i], dtype=float)
+                    for i, name in enumerate(param_names)
+                    if i < len(fisher_data)
+                }
+            if isinstance(opt_data, dict):
+                self.optimal_weights = {
+                    name: np.asarray(opt_data[name], dtype=float)
+                    for name in param_names
+                    if name in opt_data
+                }
+            elif isinstance(opt_data, list):
+                self.optimal_weights = {
+                    name: np.asarray(opt_data[i], dtype=float)
+                    for i, name in enumerate(param_names)
+                    if i < len(opt_data)
+                }
+
+        # Ripristina il replay buffer episodico se presente
+        replay_data = state.get("replay_buffer")
+        if replay_data is not None:
+            self.replay_buffer = [
+                (np.asarray(inp), np.asarray(tgt))
+                for inp, tgt in replay_data
+            ]
 
         if load_tokenizer and tokenizer_state and hasattr(self.tokenizer, "load_state_dict"):
             self.tokenizer.load_state_dict(tokenizer_state)

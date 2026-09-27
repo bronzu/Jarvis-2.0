@@ -173,6 +173,18 @@ class ExperimentalTrainer:
                 except Exception:
                     pass
 
+            # Continual Learning: calcola la Fisher Matrix e salva i pesi ottimali
+            # prima di addestrare il candidato su nuovi dati, per prevenire il
+            # Catastrophic Forgetting tramite Elastic Weight Consolidation (EWC).
+            try:
+                fisher_dataset = training_dataset if training_dataset is not None else None
+                if fisher_dataset is not None:
+                    fisher_samples = int(params.get("fisher_samples", 100))
+                    trainer.compute_fisher_matrix(fisher_dataset, num_samples=fisher_samples)
+            except Exception as fisher_error:
+                # La Fisher matrix è opzionale: il training continua senza EWC
+                result.metrics["fisher_error"] = str(fisher_error)
+
             checkpoint_dir = self.base_dir / candidate_id
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             checkpoint_path = checkpoint_dir / f"candidate-{candidate_id[:8]}.pkl"
@@ -187,6 +199,7 @@ class ExperimentalTrainer:
                 patience=2,
                 checkpoint_path=str(checkpoint_path),
                 last_checkpoint_path=str(checkpoint_path),
+                ewc_lambda=float(params.get("ewc_lambda", 0.5)),
             )
 
             if not checkpoint_path.exists():

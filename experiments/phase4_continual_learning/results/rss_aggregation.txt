@@ -1,0 +1,8 @@
+campioni per variante: 7
+  full-parameter   min  111.00  mediana  112.78  max  120.70  media  113.39 MB
+  LoRA rank 4      min   94.12  mediana   95.11  max  100.38  media   95.91 MB
+  LoRA rank 16     min   94.80  mediana   95.69  max  102.77  media   97.39 MB
+
+riduzione su mediana: rank 4 15.67%   rank 16 15.16%
+riduzione conservativa (min full vs max LoRA): rank 4 9.57%  rank 16 7.41%
+riduzione ottimistica (max full vs min LoRA):   rank 4 22.02%  rank 16 21.46%

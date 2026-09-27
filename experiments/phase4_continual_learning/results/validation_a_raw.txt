@@ -1,0 +1,26 @@
+==============================================================================
+CRITERIO (a) — RIDUZIONE DELLA RAM: fisher_matrix + optimal_weights
+==============================================================================
+
+Configurazione di produzione: vocab 8590, d_model 128, d_ff 256, 4 layer
+Campioni Fisher: 50
+
+variante                      params   addestrabili     entries   RAM (MB)  tracemalloc (MB)  latenza (ms)
+----------------------------------------------------------------------------------------------------------
+full-parameter             2,737,806      2,737,806   2,737,806    41.7756           86.5340        675.09
+Micro-EWC/LoRA rank 4      2,743,950          6,144       6,144     0.0938           67.9005        409.93
+Micro-EWC/LoRA rank 16     2,762,382         24,576      24,576     0.3750           68.3282        446.11
+
+Riduzione strutture persistenti, full-parameter -> Micro-EWC/LoRA rank 4: 43,804,896 B -> 98,304 B = 99.7756%
+Riduzione strutture persistenti, full-parameter -> Micro-EWC/LoRA rank 16: 43,804,896 B -> 393,216 B = 99.1023%
+
+RSS reale di processo (`ru_maxrss`, una variante per processo):
+variante                  baseline (MB)   picco (MB)   delta (MB)   riduzione
+-----------------------------------------------------------------------------
+full-parameter                    32.50       143.50       111.00       0.00%
+Micro-EWC/LoRA rank 4             32.42       132.80       100.38       9.57%
+Micro-EWC/LoRA rank 16            32.52       135.28       102.77       7.42%
+
+RSS di picco del processo principale a fine esecuzione: 144.34 MB
+
+Risultati JSON scritti in experiments/phase4_continual_learning/results/a_results.json

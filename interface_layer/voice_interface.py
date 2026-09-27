@@ -38,6 +38,7 @@ from executive_system.capability_registry import CapabilityRegistry
 from executive_system.tool_selector import ToolSelector
 from executive_system.tools.web_tool import WebBrowserTool
 from executive_system.router import ExecutiveRouter
+from cognitive_core.perception import PerceptionLayer
 
 
 class VoiceInterface:
@@ -47,7 +48,7 @@ class VoiceInterface:
     Non conosce modelli esterni, LLMClient, Ollama o OpenAI.
     """
 
-    def __init__(self, executive_router=None, registry=None):
+    def __init__(self, executive_router=None, registry=None, perception_layer=None):
         self.executive_router = executive_router or ExecutiveRouter()
         self.registry = registry or CapabilityRegistry()
         self.registry.register("jarvis_generate")
@@ -56,6 +57,7 @@ class VoiceInterface:
         self.web_tool = self.tool_selector.select("web_search") or WebBrowserTool()
         self._tts_backend = self._load_tts_backend()
         self._stt_backend = self._load_stt_backend()
+        self.perception_layer = perception_layer or PerceptionLayer()
 
     def speak(self, prompt):
         if prompt is None or str(prompt).strip() == "":
@@ -74,8 +76,8 @@ class VoiceInterface:
                 "fallback": False,
             }
 
-        # ROUTING VERSO EXECUTIVE SYSTEM (MAI direttamente a un LLM)
-        result = self.executive_router.generate(text)
+        percept_event = self.perception_layer.process_text(text)
+        result = self.executive_router.generate(percept_event.normalized_text)
         return {
             "output": result.get("response") or result.get("text") or "",
             "route": result.get("route", "internal"),

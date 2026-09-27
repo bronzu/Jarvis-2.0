@@ -1,0 +1,442 @@
+==============================================================================
+CRITERI (c) e (d) — RITENZIONE E APPRENDIMENTO, STESSO ESPERIMENTO A->B
+==============================================================================
+Task A (prosa tecnica italiana):
+  - DOCUMENTAZIONE/ARCHITETTURA.md
+  - DOCUMENTAZIONE/SPECIFICA_PROGETTO.md
+  - DOCUMENTAZIONE/ARCHITETTURA_2.md
+  - DOCUMENTAZIONE/DIARIO.md
+  parole: 16,953  campioni totali: 1,059  (train 795 / val 264)
+Task B (codice sorgente Python):
+  - neural_core/network.py
+  - neural_core/trainer.py
+  - neural_core/tokenizer.py
+  - neural_core/dataset.py
+  - neural_core/loss.py
+  - neural_core/optimizer.py
+  - neural_core/torch_model.py
+  - neural_core/backend.py
+  parole: 11,917  campioni totali: 744  (train 558 / val 186)
+
+Vocabolario: 6,736 token (loss casuale = ln(vocab) = 8.8152)
+Modello: d_model 128, d_ff 256, 2 layer, num_heads 4
+Addestramento: 40 epoch per task, batch 32, Adam lr 0.02, seed 42
+LoRA: rank 16, alpha 16.0  |  ewc_lambda: 100
+Replay episodico: 20% di dati storici del task A
+Valutazione su split di validazione mai visto in addestramento (25% dei campioni): la ritenzione non e' misurata su dati memorizzati.
+
+------------------------------------------------------------------------------
+CRITERIO (c) — RITENZIONE SUL TASK A (EWC ATTIVO vs DISATTIVATO)
+------------------------------------------------------------------------------
+
+[scenario: lora_ewc_on] ...
+  Step 10/25 - batch loss: 8.7400 - avg(last 10): 8.9208
+  Step 20/25 - batch loss: 8.6993 - avg(last 10): 8.7054
+  Step 10/25 - batch loss: 8.6393 - avg(last 10): 8.6794
+  Step 20/25 - batch loss: 8.6570 - avg(last 10): 8.6305
+  Step 10/25 - batch loss: 8.5445 - avg(last 10): 8.5104
+  Step 20/25 - batch loss: 8.6750 - avg(last 10): 8.4406
+  Step 10/25 - batch loss: 7.9983 - avg(last 10): 8.2483
+  Step 20/25 - batch loss: 8.0348 - avg(last 10): 8.1721
+  Step 10/25 - batch loss: 7.8778 - avg(last 10): 7.9579
+  Step 20/25 - batch loss: 8.2088 - avg(last 10): 8.1167
+  Step 10/25 - batch loss: 7.9302 - avg(last 10): 7.9233
+  Step 20/25 - batch loss: 8.1173 - avg(last 10): 7.8981
+  Step 10/25 - batch loss: 8.0085 - avg(last 10): 7.8212
+  Step 20/25 - batch loss: 7.7276 - avg(last 10): 7.7843
+  Step 10/25 - batch loss: 7.3765 - avg(last 10): 7.6585
+  Step 20/25 - batch loss: 7.7186 - avg(last 10): 7.7771
+  Step 10/25 - batch loss: 7.7227 - avg(last 10): 7.6521
+  Step 20/25 - batch loss: 7.7109 - avg(last 10): 7.6518
+  Step 10/25 - batch loss: 7.8933 - avg(last 10): 7.6770
+  Step 20/25 - batch loss: 7.4896 - avg(last 10): 7.6178
+  Step 10/25 - batch loss: 7.5306 - avg(last 10): 7.5219
+  Step 20/25 - batch loss: 7.6623 - avg(last 10): 7.5451
+  Step 10/25 - batch loss: 7.5102 - avg(last 10): 7.4143
+  Step 20/25 - batch loss: 7.7367 - avg(last 10): 7.6115
+  Step 10/25 - batch loss: 7.1674 - avg(last 10): 7.4029
+  Step 20/25 - batch loss: 7.4746 - avg(last 10): 7.5099
+  Step 10/25 - batch loss: 7.4721 - avg(last 10): 7.4201
+  Step 20/25 - batch loss: 7.3539 - avg(last 10): 7.3874
+  Step 10/25 - batch loss: 7.4854 - avg(last 10): 7.3667
+  Step 20/25 - batch loss: 7.5638 - avg(last 10): 7.4206
+  Step 10/25 - batch loss: 7.1533 - avg(last 10): 7.3060
+  Step 20/25 - batch loss: 7.5389 - avg(last 10): 7.4218
+  Step 10/25 - batch loss: 7.4015 - avg(last 10): 7.3290
+  Step 20/25 - batch loss: 7.4572 - avg(last 10): 7.3400
+  Step 10/25 - batch loss: 7.4877 - avg(last 10): 7.2707
+  Step 20/25 - batch loss: 7.4561 - avg(last 10): 7.3708
+  Step 10/25 - batch loss: 7.4782 - avg(last 10): 7.2984
+  Step 20/25 - batch loss: 7.5867 - avg(last 10): 7.3675
+  Step 10/25 - batch loss: 7.3703 - avg(last 10): 7.1362
+  Step 20/25 - batch loss: 7.5786 - avg(last 10): 7.3986
+  Step 10/25 - batch loss: 7.3871 - avg(last 10): 7.1642
+  Step 20/25 - batch loss: 7.1576 - avg(last 10): 7.3158
+  Step 10/25 - batch loss: 7.3512 - avg(last 10): 7.1359
+  Step 20/25 - batch loss: 7.4297 - avg(last 10): 7.3472
+  Step 10/25 - batch loss: 7.3372 - avg(last 10): 7.1885
+  Step 20/25 - batch loss: 7.3628 - avg(last 10): 7.1930
+  Step 10/25 - batch loss: 7.2861 - avg(last 10): 7.1093
+  Step 20/25 - batch loss: 7.2125 - avg(last 10): 7.2520
+  Step 10/25 - batch loss: 7.1846 - avg(last 10): 7.1476
+  Step 20/25 - batch loss: 7.6638 - avg(last 10): 7.3028
+  Step 10/25 - batch loss: 7.1537 - avg(last 10): 7.1425
+  Step 20/25 - batch loss: 7.3075 - avg(last 10): 7.1987
+  Step 10/25 - batch loss: 6.9671 - avg(last 10): 7.0693
+  Step 20/25 - batch loss: 7.2515 - avg(last 10): 7.3184
+  Step 10/25 - batch loss: 6.9756 - avg(last 10): 7.1477
+  Step 20/25 - batch loss: 7.1287 - avg(last 10): 7.2278
+  Step 10/25 - batch loss: 7.2884 - avg(last 10): 7.1289
+  Step 20/25 - batch loss: 7.0635 - avg(last 10): 7.2120
+  Step 10/25 - batch loss: 6.9709 - avg(last 10): 7.1308
+  Step 20/25 - batch loss: 7.1394 - avg(last 10): 7.1236
+  Step 10/25 - batch loss: 7.3135 - avg(last 10): 7.1080
+  Step 20/25 - batch loss: 6.9350 - avg(last 10): 7.1174
+  Step 10/25 - batch loss: 7.1417 - avg(last 10): 7.0881
+  Step 20/25 - batch loss: 7.3822 - avg(last 10): 7.1202
+  Step 10/25 - batch loss: 7.0550 - avg(last 10): 7.0868
+  Step 20/25 - batch loss: 7.2983 - avg(last 10): 7.1850
+  Step 10/25 - batch loss: 7.2131 - avg(last 10): 7.1013
+  Step 20/25 - batch loss: 6.9946 - avg(last 10): 7.1365
+  Step 10/25 - batch loss: 6.8675 - avg(last 10): 7.0123
+  Step 20/25 - batch loss: 7.1773 - avg(last 10): 7.1993
+  Step 10/25 - batch loss: 7.2396 - avg(last 10): 7.0812
+  Step 20/25 - batch loss: 7.1175 - avg(last 10): 7.1826
+  Step 10/25 - batch loss: 6.9549 - avg(last 10): 7.0488
+  Step 20/25 - batch loss: 7.4027 - avg(last 10): 7.1547
+  Step 10/25 - batch loss: 7.4642 - avg(last 10): 7.0888
+  Step 20/25 - batch loss: 6.9107 - avg(last 10): 7.1083
+  Step 10/25 - batch loss: 7.1351 - avg(last 10): 7.0085
+  Step 20/25 - batch loss: 7.3921 - avg(last 10): 7.1314
+  Step 10/25 - batch loss: 7.0975 - avg(last 10): 7.0550
+  Step 20/25 - batch loss: 6.9657 - avg(last 10): 7.0902
+  Step 10/18 - batch loss: 8.9100 - avg(last 10): 8.9074
+  Step 10/18 - batch loss: 8.1663 - avg(last 10): 8.5488
+  Step 10/18 - batch loss: 8.3169 - avg(last 10): 8.4371
+  Step 10/18 - batch loss: 8.1613 - avg(last 10): 8.3917
+  Step 10/18 - batch loss: 8.3564 - avg(last 10): 8.3881
+  Step 10/18 - batch loss: 8.2523 - avg(last 10): 8.3967
+  Step 10/18 - batch loss: 8.2525 - avg(last 10): 8.3765
+  Step 10/18 - batch loss: 8.3802 - avg(last 10): 8.3927
+  Step 10/18 - batch loss: 8.2202 - avg(last 10): 8.3900
+  Step 10/18 - batch loss: 8.3545 - avg(last 10): 8.4013
+  Step 10/18 - batch loss: 8.3442 - avg(last 10): 8.4225
+  Step 10/18 - batch loss: 8.3505 - avg(last 10): 8.4398
+  Step 10/18 - batch loss: 8.2427 - avg(last 10): 8.4047
+  Step 10/18 - batch loss: 8.1845 - avg(last 10): 8.3869
+  Step 10/18 - batch loss: 8.3228 - avg(last 10): 8.4051
+  Step 10/18 - batch loss: 8.2237 - avg(last 10): 8.3666
+  Step 10/18 - batch loss: 8.1039 - avg(last 10): 8.3763
+  Step 10/18 - batch loss: 8.3212 - avg(last 10): 8.4585
+  Step 10/18 - batch loss: 8.1617 - avg(last 10): 8.3827
+  Step 10/18 - batch loss: 8.0536 - avg(last 10): 8.3847
+  Step 10/18 - batch loss: 8.2752 - avg(last 10): 8.3878
+  Step 10/18 - batch loss: 8.2435 - avg(last 10): 8.3924
+  Step 10/18 - batch loss: 8.1569 - avg(last 10): 8.3967
+  Step 10/18 - batch loss: 8.2741 - avg(last 10): 8.4140
+  Step 10/18 - batch loss: 8.0944 - avg(last 10): 8.4084
+  Step 10/18 - batch loss: 8.2785 - avg(last 10): 8.4206
+  Step 10/18 - batch loss: 8.2727 - avg(last 10): 8.3941
+  Step 10/18 - batch loss: 8.1159 - avg(last 10): 8.4102
+  Step 10/18 - batch loss: 8.3039 - avg(last 10): 8.4222
+  Step 10/18 - batch loss: 8.2325 - avg(last 10): 8.3809
+  Step 10/18 - batch loss: 8.1688 - avg(last 10): 8.3715
+  Step 10/18 - batch loss: 8.2094 - avg(last 10): 8.3837
+  Step 10/18 - batch loss: 8.1258 - avg(last 10): 8.3813
+  Step 10/18 - batch loss: 8.1743 - avg(last 10): 8.4231
+  Step 10/18 - batch loss: 8.1141 - avg(last 10): 8.3939
+  Step 10/18 - batch loss: 8.0860 - avg(last 10): 8.3499
+  Step 10/18 - batch loss: 8.1401 - avg(last 10): 8.3878
+  Step 10/18 - batch loss: 8.1322 - avg(last 10): 8.3823
+  Step 10/18 - batch loss: 8.2705 - avg(last 10): 8.4270
+  Step 10/18 - batch loss: 8.4150 - avg(last 10): 8.3910
+
+[scenario: lora_ewc_off] ...
+  Step 10/25 - batch loss: 8.7400 - avg(last 10): 8.9208
+  Step 20/25 - batch loss: 8.6993 - avg(last 10): 8.7054
+  Step 10/25 - batch loss: 8.6393 - avg(last 10): 8.6794
+  Step 20/25 - batch loss: 8.6570 - avg(last 10): 8.6305
+  Step 10/25 - batch loss: 8.5445 - avg(last 10): 8.5104
+  Step 20/25 - batch loss: 8.6750 - avg(last 10): 8.4406
+  Step 10/25 - batch loss: 7.9983 - avg(last 10): 8.2483
+  Step 20/25 - batch loss: 8.0348 - avg(last 10): 8.1721
+  Step 10/25 - batch loss: 7.8778 - avg(last 10): 7.9579
+  Step 20/25 - batch loss: 8.2088 - avg(last 10): 8.1167
+  Step 10/25 - batch loss: 7.9302 - avg(last 10): 7.9233
+  Step 20/25 - batch loss: 8.1173 - avg(last 10): 7.8981
+  Step 10/25 - batch loss: 8.0085 - avg(last 10): 7.8212
+  Step 20/25 - batch loss: 7.7276 - avg(last 10): 7.7843
+  Step 10/25 - batch loss: 7.3765 - avg(last 10): 7.6585
+  Step 20/25 - batch loss: 7.7186 - avg(last 10): 7.7771
+  Step 10/25 - batch loss: 7.7227 - avg(last 10): 7.6521
+  Step 20/25 - batch loss: 7.7109 - avg(last 10): 7.6518
+  Step 10/25 - batch loss: 7.8933 - avg(last 10): 7.6770
+  Step 20/25 - batch loss: 7.4896 - avg(last 10): 7.6178
+  Step 10/25 - batch loss: 7.5306 - avg(last 10): 7.5219
+  Step 20/25 - batch loss: 7.6623 - avg(last 10): 7.5451
+  Step 10/25 - batch loss: 7.5102 - avg(last 10): 7.4143
+  Step 20/25 - batch loss: 7.7367 - avg(last 10): 7.6115
+  Step 10/25 - batch loss: 7.1674 - avg(last 10): 7.4029
+  Step 20/25 - batch loss: 7.4746 - avg(last 10): 7.5099
+  Step 10/25 - batch loss: 7.4721 - avg(last 10): 7.4201
+  Step 20/25 - batch loss: 7.3539 - avg(last 10): 7.3874
+  Step 10/25 - batch loss: 7.4854 - avg(last 10): 7.3667
+  Step 20/25 - batch loss: 7.5638 - avg(last 10): 7.4206
+  Step 10/25 - batch loss: 7.1533 - avg(last 10): 7.3060
+  Step 20/25 - batch loss: 7.5389 - avg(last 10): 7.4218
+  Step 10/25 - batch loss: 7.4015 - avg(last 10): 7.3290
+  Step 20/25 - batch loss: 7.4572 - avg(last 10): 7.3400
+  Step 10/25 - batch loss: 7.4877 - avg(last 10): 7.2707
+  Step 20/25 - batch loss: 7.4561 - avg(last 10): 7.3708
+  Step 10/25 - batch loss: 7.4782 - avg(last 10): 7.2984
+  Step 20/25 - batch loss: 7.5867 - avg(last 10): 7.3675
+  Step 10/25 - batch loss: 7.3703 - avg(last 10): 7.1362
+  Step 20/25 - batch loss: 7.5786 - avg(last 10): 7.3986
+  Step 10/25 - batch loss: 7.3871 - avg(last 10): 7.1642
+  Step 20/25 - batch loss: 7.1576 - avg(last 10): 7.3158
+  Step 10/25 - batch loss: 7.3512 - avg(last 10): 7.1359
+  Step 20/25 - batch loss: 7.4297 - avg(last 10): 7.3472
+  Step 10/25 - batch loss: 7.3372 - avg(last 10): 7.1885
+  Step 20/25 - batch loss: 7.3628 - avg(last 10): 7.1930
+  Step 10/25 - batch loss: 7.2861 - avg(last 10): 7.1093
+  Step 20/25 - batch loss: 7.2125 - avg(last 10): 7.2520
+  Step 10/25 - batch loss: 7.1846 - avg(last 10): 7.1476
+  Step 20/25 - batch loss: 7.6638 - avg(last 10): 7.3028
+  Step 10/25 - batch loss: 7.1537 - avg(last 10): 7.1425
+  Step 20/25 - batch loss: 7.3075 - avg(last 10): 7.1987
+  Step 10/25 - batch loss: 6.9671 - avg(last 10): 7.0693
+  Step 20/25 - batch loss: 7.2515 - avg(last 10): 7.3184
+  Step 10/25 - batch loss: 6.9756 - avg(last 10): 7.1477
+  Step 20/25 - batch loss: 7.1287 - avg(last 10): 7.2278
+  Step 10/25 - batch loss: 7.2884 - avg(last 10): 7.1289
+  Step 20/25 - batch loss: 7.0635 - avg(last 10): 7.2120
+  Step 10/25 - batch loss: 6.9709 - avg(last 10): 7.1308
+  Step 20/25 - batch loss: 7.1394 - avg(last 10): 7.1236
+  Step 10/25 - batch loss: 7.3135 - avg(last 10): 7.1080
+  Step 20/25 - batch loss: 6.9350 - avg(last 10): 7.1174
+  Step 10/25 - batch loss: 7.1417 - avg(last 10): 7.0881
+  Step 20/25 - batch loss: 7.3822 - avg(last 10): 7.1202
+  Step 10/25 - batch loss: 7.0550 - avg(last 10): 7.0868
+  Step 20/25 - batch loss: 7.2983 - avg(last 10): 7.1850
+  Step 10/25 - batch loss: 7.2131 - avg(last 10): 7.1013
+  Step 20/25 - batch loss: 6.9946 - avg(last 10): 7.1365
+  Step 10/25 - batch loss: 6.8675 - avg(last 10): 7.0123
+  Step 20/25 - batch loss: 7.1773 - avg(last 10): 7.1993
+  Step 10/25 - batch loss: 7.2396 - avg(last 10): 7.0812
+  Step 20/25 - batch loss: 7.1175 - avg(last 10): 7.1826
+  Step 10/25 - batch loss: 6.9549 - avg(last 10): 7.0488
+  Step 20/25 - batch loss: 7.4027 - avg(last 10): 7.1547
+  Step 10/25 - batch loss: 7.4642 - avg(last 10): 7.0888
+  Step 20/25 - batch loss: 6.9107 - avg(last 10): 7.1083
+  Step 10/25 - batch loss: 7.1351 - avg(last 10): 7.0085
+  Step 20/25 - batch loss: 7.3921 - avg(last 10): 7.1314
+  Step 10/25 - batch loss: 7.0975 - avg(last 10): 7.0550
+  Step 20/25 - batch loss: 6.9657 - avg(last 10): 7.0902
+  Step 10/18 - batch loss: 8.8823 - avg(last 10): 8.8761
+  Step 10/18 - batch loss: 8.2108 - avg(last 10): 8.3436
+  Step 10/18 - batch loss: 8.2826 - avg(last 10): 8.1831
+  Step 10/18 - batch loss: 8.0415 - avg(last 10): 8.1217
+  Step 10/18 - batch loss: 8.1736 - avg(last 10): 8.0765
+  Step 10/18 - batch loss: 8.0688 - avg(last 10): 8.0583
+  Step 10/18 - batch loss: 8.0024 - avg(last 10): 8.0031
+  Step 10/18 - batch loss: 8.1331 - avg(last 10): 7.9547
+  Step 10/18 - batch loss: 7.9556 - avg(last 10): 7.9388
+  Step 10/18 - batch loss: 8.0220 - avg(last 10): 7.8953
+  Step 10/18 - batch loss: 8.0046 - avg(last 10): 7.8627
+  Step 10/18 - batch loss: 7.9429 - avg(last 10): 7.8646
+  Step 10/18 - batch loss: 7.7825 - avg(last 10): 7.7728
+  Step 10/18 - batch loss: 7.5534 - avg(last 10): 7.6826
+  Step 10/18 - batch loss: 7.6723 - avg(last 10): 7.6516
+  Step 10/18 - batch loss: 7.7284 - avg(last 10): 7.5995
+  Step 10/18 - batch loss: 7.5479 - avg(last 10): 7.5933
+  Step 10/18 - batch loss: 7.5766 - avg(last 10): 7.6432
+  Step 10/18 - batch loss: 7.5689 - avg(last 10): 7.5513
+  Step 10/18 - batch loss: 7.3267 - avg(last 10): 7.5297
+  Step 10/18 - batch loss: 7.5793 - avg(last 10): 7.4553
+  Step 10/18 - batch loss: 7.4568 - avg(last 10): 7.4429
+  Step 10/18 - batch loss: 7.3336 - avg(last 10): 7.4539
+  Step 10/18 - batch loss: 7.6143 - avg(last 10): 7.4227
+  Step 10/18 - batch loss: 7.2588 - avg(last 10): 7.4019
+  Step 10/18 - batch loss: 7.2121 - avg(last 10): 7.4144
+  Step 10/18 - batch loss: 7.4271 - avg(last 10): 7.3439
+  Step 10/18 - batch loss: 7.2673 - avg(last 10): 7.3367
+  Step 10/18 - batch loss: 7.3963 - avg(last 10): 7.3191
+  Step 10/18 - batch loss: 7.3545 - avg(last 10): 7.2671
+  Step 10/18 - batch loss: 7.2486 - avg(last 10): 7.2688
+  Step 10/18 - batch loss: 7.3865 - avg(last 10): 7.2082
+  Step 10/18 - batch loss: 7.0521 - avg(last 10): 7.1893
+  Step 10/18 - batch loss: 7.3555 - avg(last 10): 7.2544
+  Step 10/18 - batch loss: 7.0779 - avg(last 10): 7.1955
+  Step 10/18 - batch loss: 6.9504 - avg(last 10): 7.0848
+  Step 10/18 - batch loss: 7.0414 - avg(last 10): 7.1731
+  Step 10/18 - batch loss: 7.2569 - avg(last 10): 7.1128
+  Step 10/18 - batch loss: 7.2674 - avg(last 10): 7.1587
+  Step 10/18 - batch loss: 7.1262 - avg(last 10): 7.1199
+
+[scenario: full_finetune] ...
+  Step 10/25 - batch loss: 8.4598 - avg(last 10): 8.5027
+  Step 20/25 - batch loss: 7.7495 - avg(last 10): 7.9322
+  Step 10/25 - batch loss: 6.7273 - avg(last 10): 6.9307
+  Step 20/25 - batch loss: 6.7511 - avg(last 10): 6.7421
+  Step 10/25 - batch loss: 6.1854 - avg(last 10): 6.1681
+  Step 20/25 - batch loss: 6.5003 - avg(last 10): 6.1730
+  Step 10/25 - batch loss: 5.1300 - avg(last 10): 5.4329
+  Step 20/25 - batch loss: 5.3071 - avg(last 10): 5.4400
+  Step 10/25 - batch loss: 4.1935 - avg(last 10): 4.5781
+  Step 20/25 - batch loss: 5.1735 - avg(last 10): 5.0327
+  Step 10/25 - batch loss: 4.0953 - avg(last 10): 4.0539
+  Step 20/25 - batch loss: 4.7229 - avg(last 10): 4.2740
+  Step 10/25 - batch loss: 4.0520 - avg(last 10): 3.5492
+  Step 20/25 - batch loss: 3.8391 - avg(last 10): 3.8208
+  Step 10/25 - batch loss: 2.9818 - avg(last 10): 3.0193
+  Step 20/25 - batch loss: 3.5649 - avg(last 10): 3.4228
+  Step 10/25 - batch loss: 2.7863 - avg(last 10): 2.7057
+  Step 20/25 - batch loss: 3.2005 - avg(last 10): 3.1057
+  Step 10/25 - batch loss: 2.7739 - avg(last 10): 2.4862
+  Step 20/25 - batch loss: 2.8841 - avg(last 10): 2.8216
+  Step 10/25 - batch loss: 2.2816 - avg(last 10): 2.3643
+  Step 20/25 - batch loss: 2.6712 - avg(last 10): 2.5550
+  Step 10/25 - batch loss: 2.3453 - avg(last 10): 2.0609
+  Step 20/25 - batch loss: 2.5179 - avg(last 10): 2.3338
+  Step 10/25 - batch loss: 1.8251 - avg(last 10): 1.8796
+  Step 20/25 - batch loss: 2.2651 - avg(last 10): 2.1901
+  Step 10/25 - batch loss: 2.0327 - avg(last 10): 1.7571
+  Step 20/25 - batch loss: 2.1732 - avg(last 10): 2.0026
+  Step 10/25 - batch loss: 1.7662 - avg(last 10): 1.6388
+  Step 20/25 - batch loss: 2.0744 - avg(last 10): 1.9280
+  Step 10/25 - batch loss: 1.5010 - avg(last 10): 1.4944
+  Step 20/25 - batch loss: 1.8877 - avg(last 10): 1.8442
+  Step 10/25 - batch loss: 1.7532 - avg(last 10): 1.5366
+  Step 20/25 - batch loss: 2.2064 - avg(last 10): 1.8879
+  Step 10/25 - batch loss: 1.7936 - avg(last 10): 1.7882
+  Step 20/25 - batch loss: 2.1615 - avg(last 10): 1.9227
+  Step 10/25 - batch loss: 1.7195 - avg(last 10): 1.5015
+  Step 20/25 - batch loss: 1.8988 - avg(last 10): 1.7893
+  Step 10/25 - batch loss: 1.2818 - avg(last 10): 1.3780
+  Step 20/25 - batch loss: 1.6200 - avg(last 10): 1.6370
+  Step 10/25 - batch loss: 1.4284 - avg(last 10): 1.3201
+  Step 20/25 - batch loss: 1.7607 - avg(last 10): 1.5180
+  Step 10/25 - batch loss: 1.1236 - avg(last 10): 1.1551
+  Step 20/25 - batch loss: 1.3487 - avg(last 10): 1.4313
+  Step 10/25 - batch loss: 1.2181 - avg(last 10): 1.1993
+  Step 20/25 - batch loss: 1.4526 - avg(last 10): 1.4586
+  Step 10/25 - batch loss: 1.3016 - avg(last 10): 1.2818
+  Step 20/25 - batch loss: 1.6024 - avg(last 10): 1.5791
+  Step 10/25 - batch loss: 1.4360 - avg(last 10): 1.2683
+  Step 20/25 - batch loss: 1.6416 - avg(last 10): 1.5570
+  Step 10/25 - batch loss: 1.5400 - avg(last 10): 1.4373
+  Step 20/25 - batch loss: 1.7013 - avg(last 10): 1.6729
+  Step 10/25 - batch loss: 1.4622 - avg(last 10): 1.3216
+  Step 20/25 - batch loss: 1.6387 - avg(last 10): 1.5342
+  Step 10/25 - batch loss: 1.4363 - avg(last 10): 1.3415
+  Step 20/25 - batch loss: 1.7048 - avg(last 10): 1.5703
+  Step 10/25 - batch loss: 1.2632 - avg(last 10): 1.3214
+  Step 20/25 - batch loss: 1.5659 - avg(last 10): 1.5119
+  Step 10/25 - batch loss: 1.4409 - avg(last 10): 1.2512
+  Step 20/25 - batch loss: 1.5448 - avg(last 10): 1.3811
+  Step 10/25 - batch loss: 1.4047 - avg(last 10): 1.3363
+  Step 20/25 - batch loss: 1.5774 - avg(last 10): 1.5430
+  Step 10/25 - batch loss: 1.3553 - avg(last 10): 1.1567
+  Step 20/25 - batch loss: 1.3574 - avg(last 10): 1.3239
+  Step 10/25 - batch loss: 1.1780 - avg(last 10): 1.1597
+  Step 20/25 - batch loss: 1.5473 - avg(last 10): 1.3695
+  Step 10/25 - batch loss: 1.0585 - avg(last 10): 1.1678
+  Step 20/25 - batch loss: 1.4692 - avg(last 10): 1.3537
+  Step 10/25 - batch loss: 1.0343 - avg(last 10): 1.0559
+  Step 20/25 - batch loss: 1.3125 - avg(last 10): 1.2306
+  Step 10/25 - batch loss: 1.1006 - avg(last 10): 1.0131
+  Step 20/25 - batch loss: 1.1553 - avg(last 10): 1.1897
+  Step 10/25 - batch loss: 1.0031 - avg(last 10): 0.9607
+  Step 20/25 - batch loss: 1.1407 - avg(last 10): 1.1316
+  Step 10/25 - batch loss: 0.8936 - avg(last 10): 0.9594
+  Step 20/25 - batch loss: 1.2768 - avg(last 10): 1.1114
+  Step 10/25 - batch loss: 1.0821 - avg(last 10): 0.9936
+  Step 20/25 - batch loss: 1.1021 - avg(last 10): 1.1733
+  Step 10/25 - batch loss: 1.1136 - avg(last 10): 0.9788
+  Step 20/25 - batch loss: 1.1656 - avg(last 10): 1.1303
+  Step 10/18 - batch loss: 7.5481 - avg(last 10): 9.0312
+  Step 10/18 - batch loss: 5.6046 - avg(last 10): 5.7726
+  Step 10/18 - batch loss: 3.7201 - avg(last 10): 3.9016
+  Step 10/18 - batch loss: 2.7116 - avg(last 10): 2.6621
+  Step 10/18 - batch loss: 2.4953 - avg(last 10): 2.1073
+  Step 10/18 - batch loss: 1.9623 - avg(last 10): 1.8858
+  Step 10/18 - batch loss: 1.7588 - avg(last 10): 1.7410
+  Step 10/18 - batch loss: 1.9202 - avg(last 10): 1.6111
+  Step 10/18 - batch loss: 1.7695 - avg(last 10): 1.7343
+  Step 10/18 - batch loss: 1.7980 - avg(last 10): 1.4897
+  Step 10/18 - batch loss: 1.7093 - avg(last 10): 1.4009
+  Step 10/18 - batch loss: 1.4854 - avg(last 10): 1.3583
+  Step 10/18 - batch loss: 1.5678 - avg(last 10): 1.4042
+  Step 10/18 - batch loss: 1.3986 - avg(last 10): 1.3118
+  Step 10/18 - batch loss: 1.1369 - avg(last 10): 1.0697
+  Step 10/18 - batch loss: 1.2235 - avg(last 10): 1.0918
+  Step 10/18 - batch loss: 1.1019 - avg(last 10): 1.1274
+  Step 10/18 - batch loss: 1.2956 - avg(last 10): 1.0965
+  Step 10/18 - batch loss: 1.2182 - avg(last 10): 1.1353
+  Step 10/18 - batch loss: 1.1172 - avg(last 10): 1.1262
+  Step 10/18 - batch loss: 1.1303 - avg(last 10): 1.1381
+  Step 10/18 - batch loss: 1.1592 - avg(last 10): 1.0764
+  Step 10/18 - batch loss: 1.1823 - avg(last 10): 1.0222
+  Step 10/18 - batch loss: 1.0545 - avg(last 10): 0.9409
+  Step 10/18 - batch loss: 0.7285 - avg(last 10): 0.8112
+  Step 10/18 - batch loss: 0.8275 - avg(last 10): 0.7440
+  Step 10/18 - batch loss: 0.8966 - avg(last 10): 0.7215
+  Step 10/18 - batch loss: 0.7884 - avg(last 10): 0.7985
+  Step 10/18 - batch loss: 0.7470 - avg(last 10): 0.7295
+  Step 10/18 - batch loss: 1.0082 - avg(last 10): 0.7502
+  Step 10/18 - batch loss: 0.8991 - avg(last 10): 0.7556
+  Step 10/18 - batch loss: 1.0049 - avg(last 10): 0.8592
+  Step 10/18 - batch loss: 0.8594 - avg(last 10): 0.8134
+  Step 10/18 - batch loss: 0.5965 - avg(last 10): 0.7414
+  Step 10/18 - batch loss: 0.6940 - avg(last 10): 0.6845
+  Step 10/18 - batch loss: 0.7304 - avg(last 10): 0.6258
+  Step 10/18 - batch loss: 0.7527 - avg(last 10): 0.7237
+  Step 10/18 - batch loss: 0.6677 - avg(last 10): 0.6322
+  Step 10/18 - batch loss: 0.6472 - avg(last 10): 0.6083
+  Step 10/18 - batch loss: 0.5857 - avg(last 10): 0.5644
+
+  Micro-EWC/LoRA rank 16 — [EWC ATTIVO] (ewc_lambda 100)
+    addestrabili: 12,288 su 2,020,944 (0.608%)
+    Task A loss     : 7.886261 -> 8.272436   (degrado +4.90%)
+    Task A accuracy : 0.112216 -> 0.043561   (degrado -61.18%)
+    Task B accuracy : 0.088038   loss 8.405028
+
+  Micro-EWC/LoRA rank 16 — [EWC DISATTIVATO] (ewc_lambda 0)
+    addestrabili: 12,288 su 2,020,944 (0.608%)
+    Task A loss     : 7.886261 -> 8.462465   (degrado +7.31%)
+    Task A accuracy : 0.112216 -> 0.060606   (degrado -45.99%)
+    Task B accuracy : 0.152218   loss 7.596001
+
+  -> EWC on/off, differenza di degrado sulla LOSS del task A: -2.41 punti percentuali
+  -> EWC on/off, differenza di degrado sull'ACCURATEZZA del task A: -15.19 punti percentuali
+
+------------------------------------------------------------------------------
+CRITERIO (d) — IL TASK NUOVO VIENE IMPARATO?
+------------------------------------------------------------------------------
+Confronto a parita' di dati (stesso Task B, stessi 40 epoch, stesso batch 32, stesso seed).
+
+  LoRA (rank 16, 12,288 addestrabili, 0.608% dei parametri):
+    Task B accuracy 0.088038   loss 8.405028
+  Fine-tuning completo (1,996,368 addestrabili, 100% dei parametri):
+    Task B accuracy 0.265121   loss 10.503369
+
+  GAP accuratezza (LoRA - full-FT): -17.7083 punti percentuali
+  GAP loss assoluta  (LoRA - full-FT): -2.098341   (ratio 0.80x)
+
+  Ritenzione del task A nel fine-tuning completo (contesto):
+    Task A accuracy 0.199100 -> 0.181581   (degrado -8.80%)
+    Task A loss     8.780731 -> 8.645600   (degrado -1.54%)
+Traceback (most recent call last):
+  File "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/experiments/phase4_continual_learning/validate.py", line 433, in <module>
+    main()
+    ~~~~^^
+  File "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/experiments/phase4_continual_learning/validate.py", line 428, in main
+    Path(args.json).write_text(json.dumps(out, indent=2, default=str))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 809, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'experiments/phase4_continual_learning/results/cd_results.json'

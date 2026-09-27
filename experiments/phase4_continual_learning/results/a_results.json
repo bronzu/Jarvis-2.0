@@ -1,0 +1,46 @@
+{
+  "a": [
+    {
+      "variant": "full-parameter",
+      "lora_rank": null,
+      "params": 2737806,
+      "trainable": 2737806,
+      "entries": 2737806,
+      "bytes": 43804896,
+      "tracemalloc_peak": 90737427,
+      "latency_ms": 675.0902079511434,
+      "reduction_pct": null,
+      "rss_baseline_mb": 32.5,
+      "rss_peak_mb": 143.5,
+      "rss_delta_mb": 111.0
+    },
+    {
+      "variant": "Micro-EWC/LoRA rank 4",
+      "lora_rank": 4,
+      "params": 2743950,
+      "trainable": 6144,
+      "entries": 6144,
+      "bytes": 98304,
+      "tracemalloc_peak": 71198872,
+      "latency_ms": 409.9266670527868,
+      "reduction_pct": 99.77558672893551,
+      "rss_baseline_mb": 32.4219,
+      "rss_peak_mb": 132.7969,
+      "rss_delta_mb": 100.375
+    },
+    {
+      "variant": "Micro-EWC/LoRA rank 16",
+      "lora_rank": 16,
+      "params": 2762382,
+      "trainable": 24576,
+      "entries": 24576,
+      "bytes": 393216,
+      "tracemalloc_peak": 71647288,
+      "latency_ms": 446.10758300404996,
+      "reduction_pct": 99.10234691574202,
+      "rss_baseline_mb": 32.5156,
+      "rss_peak_mb": 135.2812,
+      "rss_delta_mb": 102.7656
+    }
+  ]
+}

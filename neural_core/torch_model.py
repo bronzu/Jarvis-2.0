@@ -62,12 +62,14 @@ class TorchMicroTransformer(torch.nn.Module):
 
     def __init__(self, vocab_size, d_model=64, num_heads=2, d_ff=128, num_layers=2,
                  max_len=256, dropout=0.0, seed=None, dtype=torch.float32,
-                 device="cpu"):
+                 device="cpu", lora_rank: int = 0, lora_alpha: float = 16.0):
         super().__init__()
         if d_model % num_heads != 0:
             raise ValueError("d_model must be divisible by num_heads")
         if not 0.0 <= dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
+        if lora_rank < 0:
+            raise ValueError("lora_rank must be >= 0")
 
         self.vocab_size = int(vocab_size)
         self.d_model = int(d_model)
@@ -81,6 +83,11 @@ class TorchMicroTransformer(torch.nn.Module):
         self.device = torch.device(device)
         self.embedding_multiplier = math.sqrt(self.d_model)
         self.eps = 1e-6
+        self.lora_rank = int(lora_rank)
+        self.lora_alpha = float(lora_alpha)
+        self.lora_scaling = self.lora_alpha / self.lora_rank if self.lora_rank > 0 else 0.0
+        # Task attivamente addestrabile sugli adapter LoRA.
+        self._active_task = 0 if lora_rank > 0 else None
 
         self.embedding = torch.nn.Parameter(
             torch.zeros(self.vocab_size, self.d_model, dtype=self.dtype, device=self.device))
@@ -89,7 +96,8 @@ class TorchMicroTransformer(torch.nn.Module):
         self.register_buffer("pe", self.pos_encoding, persistent=False)
 
         self.blocks = torch.nn.ModuleList()
-        for _ in range(self.num_layers):
+        gen = torch.Generator(device="cpu").manual_seed(1234 if seed is None else int(seed))
+        for block_idx in range(self.num_layers):
             block = torch.nn.ParameterDict({
                 "norm1_gamma": torch.nn.Parameter(torch.ones(self.d_model, dtype=self.dtype, device=self.device)),
                 "norm1_beta": torch.nn.Parameter(torch.zeros(self.d_model, dtype=self.dtype, device=self.device)),
@@ -108,6 +116,10 @@ class TorchMicroTransformer(torch.nn.Module):
                 "W2": torch.nn.Parameter(torch.zeros(self.d_ff, self.d_model, dtype=self.dtype, device=self.device)),
                 "b2": torch.nn.Parameter(torch.zeros(self.d_model, dtype=self.dtype, device=self.device)),
             })
+            if self.lora_rank > 0:
+                # Blocco adapter per-task 0. A: (rank, d_ff) Kaiming uniform;
+                # B: (d_model, rank) zero. Stessa convenzione della reference NumPy.
+                self._new_lora_params(gen, block, task=0)
             self.blocks.append(block)
 
         self.norm_gamma = torch.nn.Parameter(torch.ones(self.d_model, dtype=self.dtype, device=self.device))
@@ -116,7 +128,105 @@ class TorchMicroTransformer(torch.nn.Module):
             torch.zeros(self.d_model, self.vocab_size, dtype=self.dtype, device=self.device))
         self.output_bias = torch.nn.Parameter(torch.zeros(self.vocab_size, dtype=self.dtype, device=self.device))
 
+        self._set_trainable_flags()
+
         self._mask_cache = {}
+
+    # ------------------------------------------------------------------
+    # LoRA: blocco adapter per-task (parita' con MicroTransformer)
+    # ------------------------------------------------------------------
+
+    def _set_trainable_flags(self):
+        """
+        Congelamento selettivo: requires_grad=True SOLO sulle matrici A/B
+        dell'adapter del task ATTIVAMENTE addestrato. Tutto il resto
+        (embedding, attention, LayerNorm, W1/b1/W2/b2, output, e gli adapter
+        dei task precedenti) resta in requires_grad=False, cosi' l'update
+        Micro-EWC non puo' toccarli.
+
+        Va eseguito DOPO aver creato tutti i parametri. Si usa esplicitamente
+        nn.Module.named_parameters per non passare per metodi sovrascritti.
+        """
+        if self.lora_rank <= 0:
+            for p in torch.nn.Module.parameters(self):
+                p.requires_grad_(True)
+            return
+        active = self._normalize_task(self._active_task)
+        for name, p in torch.nn.Module.named_parameters(self):
+            p.requires_grad_(name.endswith(f"lora_{active}_A")
+                             or name.endswith(f"lora_{active}_B"))
+
+    def _new_lora_params(self, gen, block, task, warm_start_block=None):
+        """Crea (o clona) le matrici LoRA di un task dentro `block`."""
+        A = torch.empty(self.lora_rank, self.d_ff, dtype=self.dtype, device=self.device)
+        bound = math.sqrt(6.0 / (self.lora_rank + self.d_ff))
+        A.uniform_(-bound, bound, generator=gen)
+        B = torch.zeros(self.d_model, self.lora_rank, dtype=self.dtype, device=self.device)
+        if warm_start_block is not None:
+            A = warm_start_block[f"lora_{task - 1}_A"].detach().clone()
+            B = warm_start_block[f"lora_{task - 1}_B"].detach().clone()
+        block[f"lora_{task}_A"] = torch.nn.Parameter(A)
+        block[f"lora_{task}_B"] = torch.nn.Parameter(B)
+
+    @property
+    def num_lora_tasks(self):
+        """Numero di task registrati (0 se LoRA disattivata)."""
+        if not self.blocks or self.lora_rank <= 0:
+            return 0
+        n = 0
+        while f"lora_{n}_A" in self.blocks[0]:
+            n += 1
+        return n
+
+    @property
+    def active_task(self):
+        return self._active_task
+
+    def _normalize_task(self, task):
+        n = self.num_lora_tasks
+        if task is None:
+            return n - 1
+        task = int(task)
+        if not 0 <= task < n:
+            raise ValueError(f"task {task} non valido: dev'essere in [0, {n - 1}]")
+        return task
+
+    def add_task_adapter(self, task=None, warm_start=None, seed=None):
+        """
+        Registra un nuovo task e attiva il suo adapter LoRA dedicato.
+
+        Gli adapter sono append-only: registrare un task gia' esistente e'
+        un errore, per non invalidare pesi gia' addestrati. Il forward somma
+        le correzioni di tutti gli adapter (stacking), quindi il modello
+        resta un oggetto unico.
+        """
+        if self.lora_rank <= 0:
+            raise ValueError("add_task_adapter() richiede lora_rank > 0")
+        current = self.num_lora_tasks
+        if task is None:
+            task = current
+        elif int(task) < current:
+            raise ValueError(f"task {task} gia' registrato: gli adapter sono append-only")
+        gen = torch.Generator(device="cpu").manual_seed(
+            (1234 if seed is None else int(seed)) + 7919 * current
+        )
+        # `warm_start=None` deve valere `True`, come nella reference NumPy:
+        # il nuovo adapter riparte dai pesi dell'ultimo registrato.
+        if warm_start is None:
+            warm_start = True
+        for block in self.blocks:
+            self._new_lora_params(
+                gen, block, task=current,
+                warm_start_block=block if warm_start else None,
+            )
+        self._active_task = self.num_lora_tasks - 1
+        self._set_trainable_flags()
+        return self._active_task
+
+    def set_active_task(self, task):
+        self._active_task = self._normalize_task(task)
+        self._set_trainable_flags()
+        return self._active_task
 
     # ------------------------------------------------------------------
     # Config
@@ -132,6 +242,8 @@ class TorchMicroTransformer(torch.nn.Module):
             "dropout": self.dropout,
             "dtype": str(self.dtype),
             "device": str(self.device),
+            "lora_rank": self.lora_rank,
+            "lora_alpha": self.lora_alpha,
         }
 
     @property
@@ -144,7 +256,8 @@ class TorchMicroTransformer(torch.nn.Module):
     def set_parameters(self, parameters):
         """Load parameters from a list ordered like ``MicroTransformer.get_parameters``."""
         parameters = list(parameters)
-        expected = 1 + self.num_layers * 16 + 2 + 2
+        block_size = 16 + 2 * self.num_lora_tasks
+        expected = 1 + self.num_layers * block_size + 2 + 2
         if len(parameters) != expected:
             raise ValueError(f"Expected {expected} parameter arrays, got {len(parameters)}")
 
@@ -152,49 +265,32 @@ class TorchMicroTransformer(torch.nn.Module):
             self.embedding.copy_(torch.as_tensor(parameters[0], dtype=self.dtype, device=self.device))
             idx = 1
             for block in self.blocks:
-                block["norm1_gamma"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["norm1_beta"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W_q"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b_q"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W_k"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b_k"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W_v"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b_v"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W_o"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b_o"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["norm2_gamma"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["norm2_beta"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W1"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b1"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["W2"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
-                block["b2"].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
+                for key in self._block_keys():
+                    block[key].copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device))
+                    idx += 1
             self.norm_gamma.copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
             self.norm_beta.copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
             self.output_layer.copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
             self.output_bias.copy_(torch.as_tensor(parameters[idx], dtype=self.dtype, device=self.device)); idx += 1
 
+    def _block_keys(self):
+        """Chiavi di un blocco nell'ordine canonico di `get_parameters`."""
+        keys = [
+            "norm1_gamma", "norm1_beta",
+            "W_q", "b_q", "W_k", "b_k", "W_v", "b_v", "W_o", "b_o",
+            "norm2_gamma", "norm2_beta",
+            "W1", "b1", "W2", "b2",
+        ]
+        for t in range(self.num_lora_tasks):
+            keys.extend([f"lora_{t}_A", f"lora_{t}_B"])
+        return keys
+
     def get_parameters(self):
-        """Return parameters as a list of numpy arrays (float32) in reference order."""
+        """Return parameters as a list of numpy arrays in reference order."""
         out = [self.embedding.detach().cpu().numpy()]
         for block in self.blocks:
-            out.extend([
-                block["norm1_gamma"].detach().cpu().numpy(),
-                block["norm1_beta"].detach().cpu().numpy(),
-                block["W_q"].detach().cpu().numpy(),
-                block["b_q"].detach().cpu().numpy(),
-                block["W_k"].detach().cpu().numpy(),
-                block["b_k"].detach().cpu().numpy(),
-                block["W_v"].detach().cpu().numpy(),
-                block["b_v"].detach().cpu().numpy(),
-                block["W_o"].detach().cpu().numpy(),
-                block["b_o"].detach().cpu().numpy(),
-                block["norm2_gamma"].detach().cpu().numpy(),
-                block["norm2_beta"].detach().cpu().numpy(),
-                block["W1"].detach().cpu().numpy(),
-                block["b1"].detach().cpu().numpy(),
-                block["W2"].detach().cpu().numpy(),
-                block["b2"].detach().cpu().numpy(),
-            ])
+            for key in self._block_keys():
+                out.append(block[key].detach().cpu().numpy())
         out.extend([
             self.norm_gamma.detach().cpu().numpy(),
             self.norm_beta.detach().cpu().numpy(),
@@ -203,35 +299,67 @@ class TorchMicroTransformer(torch.nn.Module):
         ])
         return out
 
+    def canonical_parameter_names(self):
+        """
+        Nomi canonici dei parametri, nello stesso ordine di `get_parameters()`.
+
+        Non sovrascrive `nn.Module.named_parameters` per non rompere l'internals
+        di PyTorch: il metodo ha quindi un nome diverso.
+        """
+        out = ["embedding"]
+        for i, block in enumerate(self.blocks):
+            out.extend([f"layer{i}_{key}" for key in self._block_keys()])
+        out.extend(["norm_gamma", "norm_beta", "output_layer", "output_bias"])
+        return out
+
+    def trainable_param_names(self):
+        """Nomi dei parametri addestrabili: A/B del SOLO adapter del task attivo."""
+        if self.lora_rank <= 0:
+            return []
+        task = self._normalize_task(self._active_task)
+        return [f"layer{i}_lora_{task}_{ab}"
+                for i in range(self.num_layers) for ab in ("A", "B")]
+
+    def trainable_param_indices(self):
+        """
+        Indici in `get_parameters()` dei parametri addestrabili.
+
+        Con LoRA attivo: solo A/B. Senza LoRA: tutti (comportamento legacy).
+        """
+        if self.lora_rank <= 0:
+            return list(range(len(self.get_parameters())))
+        task = self._normalize_task(self._active_task)
+        indices = []
+        block_size = 16 + 2 * self.num_lora_tasks
+        for i in range(self.num_layers):
+            base = 1 + i * block_size
+            offset = 16 + 2 * task
+            indices.extend([base + offset, base + offset + 1])
+        return indices
+
     def parameter_count(self):
         return int(sum(p.numel() for p in self.parameters()))
 
+    def trainable_parameter_count(self):
+        """Parametri addestrabili: solo l'adapter del task attivo, o tutti."""
+        if self.lora_rank <= 0:
+            return self.parameter_count()
+        return int(sum(np.asarray(self.get_parameters()[i]).size
+                       for i in self.trainable_param_indices()))
+
+    def frozen_parameter_count(self):
+        return self.parameter_count() - self.trainable_parameter_count()
+
     def get_gradients(self):
-        """Return gradients as numpy arrays (float32) in reference parameter order.
+        """Return gradients as numpy arrays in reference parameter order.
 
         NOTE: ``nn.ParameterDict`` iterates keys alphabetically, so gradients are
         gathered explicitly to match ``get_parameters`` / the NumPy reference order.
         """
         grads = [self.embedding.grad]
         for block in self.blocks:
-            grads.extend([
-                block["norm1_gamma"].grad,
-                block["norm1_beta"].grad,
-                block["W_q"].grad,
-                block["b_q"].grad,
-                block["W_k"].grad,
-                block["b_k"].grad,
-                block["W_v"].grad,
-                block["b_v"].grad,
-                block["W_o"].grad,
-                block["b_o"].grad,
-                block["norm2_gamma"].grad,
-                block["norm2_beta"].grad,
-                block["W1"].grad,
-                block["b1"].grad,
-                block["W2"].grad,
-                block["b2"].grad,
-            ])
+            for key in self._block_keys():
+                grads.append(block[key].grad)
         grads.extend([
             self.norm_gamma.grad,
             self.norm_beta.grad,
@@ -308,6 +436,14 @@ class TorchMicroTransformer(torch.nn.Module):
             z1 = h2_norm.reshape(-1, self.d_model) @ block["W1"] + block["b1"]
             h1 = _gelu_tanh(z1)
             ff_out = (h1 @ block["W2"] + block["b2"]).reshape(batch_size, seq_len, self.d_model)
+            if self.lora_rank > 0:
+                # Correzione LoRA: scaling * (B @ A) @ h1  (torch.matmul)
+                for t in range(self.num_lora_tasks):
+                    lora_delta = torch.matmul(
+                        torch.matmul(h1, block[f"lora_{t}_A"].T), block[f"lora_{t}_B"].T)
+                    ff_out = ff_out + self.lora_scaling * lora_delta.reshape(
+                        batch_size, seq_len, self.d_model)
+
             if training and self.dropout > 0:
                 ff_out = F.dropout(ff_out, self.dropout, training=True)
             x = hidden + ff_out
@@ -365,6 +501,14 @@ class TorchMicroTransformer(torch.nn.Module):
             z1 = n2.reshape(-1, self.d_model) @ block["W1"] + block["b1"]
             h1 = _gelu_tanh(z1)
             ff_out = (h1 @ block["W2"] + block["b2"]).reshape(batch_size, seq_len, self.d_model)
+            if self.lora_rank > 0:
+                # Correzione LoRA: scaling * (B @ A) @ h1  (torch.matmul)
+                for t in range(self.num_lora_tasks):
+                    lora_delta = torch.matmul(
+                        torch.matmul(h1, block[f"lora_{t}_A"].T), block[f"lora_{t}_B"].T)
+                    ff_out = ff_out + self.lora_scaling * lora_delta.reshape(
+                        batch_size, seq_len, self.d_model)
+
             out = hidden + ff_out
 
             comps[f"layer{i}_norm1"] = n1

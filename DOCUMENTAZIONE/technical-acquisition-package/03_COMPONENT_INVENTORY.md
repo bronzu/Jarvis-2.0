@@ -5,6 +5,9 @@
 | Component | File | LOC | Status | Maturity | Dependencies |
 |---|---|---|---|---|---|
 | MicroTransformer | `network.py` | 785 | IMPLEMENTED | Production-ready | NumPy only |
+| MultiHeadLinearAttention | `network.py` | ~310 | IMPLEMENTED | Production-ready | NumPy only |
+| QuantizedLinear | `quantization.py` | 439 | IMPLEMENTED | Production-ready | NumPy only |
+| DataPipeline | `data_pipeline.py` | 426 | IMPLEMENTED | Production-ready | NumPy, minhash_lsh |
 | TorchMicroTransformer | `torch_model.py` | 381 | IMPLEMENTED | Testing | PyTorch (optional) |
 | Tokenizer | `tokenizer.py` | 395 | IMPLEMENTED | Production-ready | None |
 | Trainer | `trainer.py` | 948 | IMPLEMENTED | Production-ready | NumPy |

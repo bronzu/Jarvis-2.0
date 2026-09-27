@@ -131,7 +131,18 @@ dmypy.json
 # JARVIS specific
 state.db
 audit_logs/
-experiments/
+# Artefatto generato dai test: TESTS/test_e2e_jarvis.py crea questa directory e
+# vi scrive jarvis_test.txt a ogni esecuzione della suite.
+jarvis_e2e_fs_test/
+experiments/*
+# La validazione del Continual Learning e' citata come sorgente dei numeri
+# in 17_MODEL_TRAINING_PROVENANCE.md sezione 13.7.4: senza questi file il
+# comando di riproduzione citato non funziona per nessun altro. Si esclude
+# `experiments/*` e non `experiments/` perche' git non puo' re-includere un
+# file se una directory padre e' esclusa.
+!experiments/phase4_continual_learning/
+!experiments/phase4_continual_learning/**
+experiments/phase4_continual_learning/__pycache__/
 neural_core/data/*.pkl
 neural_core/data/*.json
 neural_core/data/*.txt

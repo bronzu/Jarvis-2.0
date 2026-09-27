@@ -1,0 +1,82 @@
+==============================================================================
+CRITERI (c) e (d) — RITENZIONE E APPRENDIMENTO, STESSO ESPERIMENTO A->B
+==============================================================================
+Task A (prosa tecnica italiana):
+  - DOCUMENTAZIONE/ARCHITETTURA.md
+  - DOCUMENTAZIONE/SPECIFICA_PROGETTO.md
+  - DOCUMENTAZIONE/ARCHITETTURA_2.md
+  - DOCUMENTAZIONE/DIARIO.md
+  parole: 16,953  campioni totali: 1,059  (train 795 / val 264)
+Task B (codice sorgente Python):
+  - neural_core/network.py
+  - neural_core/trainer.py
+  - neural_core/tokenizer.py
+  - neural_core/dataset.py
+  - neural_core/loss.py
+  - neural_core/optimizer.py
+  - neural_core/torch_model.py
+  - neural_core/backend.py
+  parole: 11,917  campioni totali: 744  (train 558 / val 186)
+
+Vocabolario: 6,736 token (loss casuale = ln(vocab) = 8.8152)
+Modello: d_model 128, d_ff 256, 2 layer, num_heads 4
+Addestramento: 40 epoch per task, batch 32, Adam lr 0.02, seed 42
+LoRA: rank 16, alpha 16.0  |  ewc_lambda: 100
+Replay episodico: 20% di dati storici del task A
+Valutazione su split di validazione mai visto in addestramento (25% dei campioni): la ritenzione non e' misurata su dati memorizzati.
+
+------------------------------------------------------------------------------
+CRITERIO (c) — RITENZIONE SUL TASK A (EWC ATTIVO vs DISATTIVATO)
+------------------------------------------------------------------------------
+
+[scenario: lora_ewc_on] ...
+
+[scenario: lora_ewc_off] ...
+
+[scenario: full_finetune] ...
+
+  Micro-EWC/LoRA rank 16 — [EWC ATTIVO] (ewc_lambda 100)
+    addestrabili: 12,288 su 2,020,944 (0.608%)
+    Task A loss     : 7.886261 -> 8.272436   (degrado +4.90%)
+    Task A accuracy : 0.112216 -> 0.043561   (degrado -61.18%)
+    Task B accuracy : 0.088038   loss 8.405028
+
+  Micro-EWC/LoRA rank 16 — [EWC DISATTIVATO] (ewc_lambda 0)
+    addestrabili: 12,288 su 2,020,944 (0.608%)
+    Task A loss     : 7.886261 -> 8.462465   (degrado +7.31%)
+    Task A accuracy : 0.112216 -> 0.060606   (degrado -45.99%)
+    Task B accuracy : 0.152218   loss 7.596001
+
+  -> EWC on/off, differenza di degrado sulla LOSS del task A: -2.41 punti percentuali
+  -> EWC on/off, differenza di degrado sull'ACCURATEZZA del task A: -15.19 punti percentuali
+
+------------------------------------------------------------------------------
+CRITERIO (d) — IL TASK NUOVO VIENE IMPARATO?
+------------------------------------------------------------------------------
+Confronto a parita' di dati (stesso Task B, stessi 40 epoch, stesso batch 32, stesso seed).
+
+  LoRA (rank 16, 12,288 addestrabili, 0.608% dei parametri):
+    Task B accuracy 0.088038   loss 8.405028
+  Fine-tuning completo (1,996,368 addestrabili, 100% dei parametri):
+    Task B accuracy 0.265121   loss 10.503369
+
+  GAP accuratezza (LoRA - full-FT): -17.7083 punti percentuali
+  GAP loss assoluta  (LoRA - full-FT): -2.098341   (ratio 0.80x)
+
+  Ritenzione del task A nel fine-tuning completo (contesto):
+    Task A accuracy 0.199100 -> 0.181581   (degrado -8.80%)
+    Task A loss     8.780731 -> 8.645600   (degrado -1.54%)
+Traceback (most recent call last):
+  File "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/experiments/phase4_continual_learning/validate.py", line 433, in <module>
+    main()
+    ~~~~^^
+  File "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/experiments/phase4_continual_learning/validate.py", line 428, in main
+    Path(args.json).write_text(json.dumps(out, indent=2, default=str))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 809, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'experiments/phase4_continual_learning/results/cd_results.json'

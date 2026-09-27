@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from cognitive_core.identity.identity_resolver import IdentityResolver
 from cognitive_core.reasoning.reasoner import Reasoner
 from cognitive_core.memory.episodic_memory import EpisodicMemory
+from cognitive_core.perception import PerceptEvent, PerceptionLayer
 from cognitive_core.understanding import Understanding
 from cognitive_core.planner import Planner
 from neural_core.model_interface import NeuralModelInterface
@@ -27,7 +28,7 @@ class CognitiveCoordinator:
                  tool_system=None, security_layer=None, vision_system=None,
                  goal_manager=None, observation_feedback=None,
                  understanding=None, planner=None, improvement_cycle=None,
-                 auto_approve_tools=True):
+                 perception_layer=None, auto_approve_tools=True):
         self.reasoner = reasoner or Reasoner()
         self.memory = memory
         if memory is not None and episodic_memory is None:
@@ -43,6 +44,7 @@ class CognitiveCoordinator:
         self.goal_manager = goal_manager
         self.observation_feedback = observation_feedback
         self.understanding = understanding or Understanding()
+        self.perception_layer = perception_layer or PerceptionLayer()
         self.planner = planner or Planner(
             reasoner=self.reasoner,
             memory=self.memory,
@@ -60,13 +62,19 @@ class CognitiveCoordinator:
         if problem is None:
             raise ValueError("Il problema non può essere None")
 
-        if isinstance(problem, dict) and problem.get("type") == "vision":
-            return self._process_vision(problem, session_id=session_id)
+        if isinstance(problem, PerceptEvent):
+            percept_event = problem
+        else:
+            percept_event = self.perception_layer.process(problem)
 
-        identity_answer = self.identity_resolver.resolve(problem)
+        if percept_event.input_type == "vision":
+            return self._process_vision_from_percept(percept_event, session_id=session_id)
+
+        normalized = percept_event.normalized_text
+        identity_answer = self.identity_resolver.resolve(normalized)
         if identity_answer is not None:
             self.episodic_memory.record(
-                problem,
+                percept_event.raw_input,
                 {
                     "result": identity_answer,
                     "source": "identity",
@@ -76,17 +84,20 @@ class CognitiveCoordinator:
             return identity_answer
 
         if getattr(self, 'neural_model', None) is not None and self.neural_interface is None:
-            return self._process_legacy(problem, session_id=session_id)
+            return self._process_legacy(percept_event, session_id=session_id)
 
-        return self._process_full(problem, session_id=session_id)
+        return self._process_full(percept_event, session_id=session_id)
 
-    def _process_legacy(self, problem, session_id=None):
+    def _process_legacy(self, percept_event, session_id=None):
         result = None
         used_source = None
+        text_query = percept_event.normalized_text
+        if percept_event.input_type == "structured":
+            text_query = percept_event.raw_input
 
         if self._neural_priority and self.neural_model is not None:
             try:
-                result = self._invoke_neural_core(problem)
+                result = self._invoke_neural_core(text_query)
                 used_source = "neural_core"
             except Exception as exc:
                 logger.warning("Neural Core fallback: %s", exc)
@@ -94,18 +105,18 @@ class CognitiveCoordinator:
 
         if result is None:
             try:
-                result = self.reasoner.reason(problem)
+                result = self.reasoner.reason(text_query)
                 used_source = "reasoner"
             except Exception as exc:
                 logger.warning("Reasoner fallback: %s", exc)
                 result = None
 
         if result is None:
-            result = self._procedural_fallback(problem)
+            result = self._procedural_fallback(text_query)
             used_source = "procedural_fallback"
 
         self.episodic_memory.record(
-            problem,
+            percept_event.raw_input,
             {
                 "result": result,
                 "source": used_source,
@@ -116,7 +127,7 @@ class CognitiveCoordinator:
 
         return result
 
-    def _process_full(self, problem, session_id=None):
+    def _process_full(self, percept_event, session_id=None):
         used_source = None
         context_parts = []
         tool_result = None
@@ -131,9 +142,12 @@ class CognitiveCoordinator:
         except Exception as exc:
             self._errors.append(f"security_layer log failed: {exc}")
 
+        text_query = percept_event.normalized_text
+        if percept_event.input_type == "structured":
+            text_query = percept_event.raw_input
         understanding = None
         try:
-            understanding = self.understanding.understand(problem)
+            understanding = self.understanding.understand(text_query)
             if understanding and understanding.get("confidence", 0) > 0:
                 context_parts.append(f"Intent: {understanding['intent']}")
                 if understanding.get("entities"):
@@ -149,7 +163,7 @@ class CognitiveCoordinator:
             if self.goal_manager is not None:
                 try:
                     goal_id = self.goal_manager.add(
-                        understanding.get("goal") or understanding.get("raw", str(problem)),
+                        understanding.get("goal") or understanding.get("raw", text_query),
                         steps=None,
                         metadata={"source": "understanding", "session_id": session_id, "intent": understanding["intent"]},
                     )
@@ -161,7 +175,7 @@ class CognitiveCoordinator:
 
         try:
             if self.memory is not None:
-                memory_hits = self.memory.search_semantic(problem)
+                memory_hits = self.memory.search_semantic(text_query)
                 if memory_hits:
                     context_parts.append("Contesto memoria precedente: " + "; ".join(
                         hit["payload"].get("text", "") for hit in memory_hits[:3]
@@ -169,14 +183,14 @@ class CognitiveCoordinator:
         except Exception as exc:
             self._errors.append(f"memory search failed: {exc}")
 
-        tool_result = self._try_execute_tool(problem, session_id=session_id)
+        tool_result = self._try_execute_tool(text_query, session_id=session_id)
         if tool_result is not None:
             context_parts.append(f"Risultato tool: {tool_result}")
             used_source = "tool"
 
         try:
             if self.memory is not None:
-                related = self.memory.related(problem)
+                related = self.memory.related(text_query)
                 if related:
                     context_parts.append("Conoscenze correlate: " + "; ".join(
                         f"{item['relation']} {item['target']}" for item in related[:5]
@@ -184,9 +198,9 @@ class CognitiveCoordinator:
         except Exception as exc:
             self._errors.append(f"memory related failed: {exc}")
 
-        if self._is_reasoning_request(problem):
+        if self._is_reasoning_request(text_query):
             try:
-                reasoning_result = self._run_reasoner(problem)
+                reasoning_result = self._run_reasoner(text_query)
                 if reasoning_result and reasoning_result.get("proved"):
                     context_parts.append(f"Ragionamento: {reasoning_result['goal']} è dimostrato")
                     if used_source is None:
@@ -195,7 +209,7 @@ class CognitiveCoordinator:
                 logger.warning("Reasoning request failed: %s", exc)
                 reasoning_result = None
 
-        enriched_prompt = problem if isinstance(problem, str) else str(problem)
+        enriched_prompt = str(text_query)
         if context_parts:
             enriched_prompt = enriched_prompt + "\n\n" + "\n".join(context_parts)
 
@@ -209,7 +223,7 @@ class CognitiveCoordinator:
             except Exception as exc:
                 logger.warning("Neural interface generation failed: %s", exc)
                 if reasoning_result is not None and used_source == "reasoner":
-                    response = f"Ragionamento completato: {reasoning_result.get('goal', problem)}"
+                    response = f"Ragionamento completato: {reasoning_result.get('goal', text_query)}"
                 elif tool_result is not None:
                     response = f"Tool eseguito: {tool_result}"
                 else:
@@ -218,7 +232,7 @@ class CognitiveCoordinator:
                         used_source = "procedural_fallback"
         else:
             if reasoning_result is not None:
-                response = f"Ragionamento completato: {reasoning_result.get('goal', problem)}"
+                response = f"Ragionamento completato: {reasoning_result.get('goal', text_query)}"
                 if used_source is None:
                     used_source = "reasoner"
             elif tool_result is not None:
@@ -252,7 +266,7 @@ class CognitiveCoordinator:
         if self.observation_feedback is not None:
             try:
                 self.observation_feedback.record(
-                    action=problem,
+                    action=percept_event.raw_input,
                     result=response,
                     outcome="success" if used_source != "procedural_fallback" else "failure",
                     session_id=session_id,
@@ -261,12 +275,12 @@ class CognitiveCoordinator:
             except Exception as exc:
                 logger.warning("Observation feedback recording failed: %s", exc)
 
-        self.episodic_memory.record(problem, outcome)
+        self.episodic_memory.record(percept_event.raw_input, outcome)
 
         if self.memory is not None:
             try:
                 self.memory.remember_working({
-                    "input": problem,
+                    "input": percept_event.raw_input,
                     "response": response,
                     "source": used_source,
                 })
@@ -294,14 +308,14 @@ class CognitiveCoordinator:
 
         return result
 
-    def _process_vision(self, problem, session_id=None):
+    def _process_vision_from_percept(self, percept_event, session_id=None):
         if self.vision_system is None:
             return {
                 "response": "Vision system non configurato.",
                 "source": "vision",
                 "vision_result": None,
             }
-        image_path = problem.get("image_path")
+        image_path = percept_event.metadata.get("image_path")
         if not image_path:
             return {
                 "response": "Percorso immagine mancante.",
