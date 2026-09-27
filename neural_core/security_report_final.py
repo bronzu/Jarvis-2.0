@@ -303,6 +303,10 @@ _MANUAL_CLASSIFICATION: Dict[str, str] = {
     "mint-fluorine/executive_system/autonomy_manager.py:33": "SAFE",
     # factory.write_file string content (not execution)
     "mint-fluorine/expansion_system/tool_factory/factory.py:91": "SAFE",
+    # validate_generated: string literals in dangerous-pattern list (not execution)
+    "mint-fluorine/expansion_system/tool_factory/factory.py:94": "SAFE",
+    # validate_generated: safe error message string (not execution)
+    "mint-fluorine/expansion_system/tool_factory/factory.py:128": "SAFE",
     # _safe_import uses __builtins__.__import__ internally — safe wrapper
     "mint-fluorine/neural_core/os_sandbox.py:239": "SAFE",
     # sandboxed exec(compile(...)) with restricted builtins
