@@ -22,6 +22,8 @@ import time
 
 import numpy as np
 
+from neural_core.trainer import safe_pickle_load
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO not in sys.path:
     sys.path.insert(0, REPO)
@@ -34,7 +36,7 @@ CONFIG = {
 
 def _load_weights():
     with open(MODEL_PKL, "rb") as fh:
-        return pickle.load(fh)["parameters"]
+        return safe_pickle_load(fh)["parameters"]
 
 
 def _bench(fn, repeats=10, warmup=3):

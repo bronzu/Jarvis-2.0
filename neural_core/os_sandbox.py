@@ -208,6 +208,36 @@ def _preexec_fn(level: OSIsolationLevel, sandbox_dir: str) -> None:
 
 _RUNNER_TEMPLATE = textwrap.dedent('''
     import sys, os, builtins, resource
+
+    _SANDBOX_DIR_RESOLVED = {sandbox_dir!r}
+    _SAFE_MODULES = {{
+        "hashlib", "json", "math", "datetime", "collections",
+        "itertools", "functools", "operator", "string", "re",
+        "enum", "decimal", "fractions", "numbers", "typing",
+        "statistics", "random", "bisect", "heapq", "array",
+        "base64", "binascii", "struct", "codecs", "unicodedata",
+        "copy", "pprint", "textwrap", "inspect",
+    }}
+
+    def _safe_open(file, mode='r', *args, **kwargs):
+        """Restricted open() that only allows access within the sandbox directory."""
+        if isinstance(file, str):
+            resolved = os.path.realpath(os.path.abspath(os.path.join(os.getcwd(), file)))
+        elif isinstance(file, int):
+            raise PermissionError("File descriptor access is not allowed in sandbox")
+        else:
+            raise PermissionError("File object access is not allowed in sandbox")
+        if _SANDBOX_DIR_RESOLVED and not resolved.startswith(_SANDBOX_DIR_RESOLVED):
+            raise PermissionError(f"Access outside sandbox denied: {{resolved}}")
+        return open(file, mode, *args, **kwargs)
+
+    def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+        """Restricted __import__ that only allows safe stdlib modules."""
+        top = name.split(".")[0]
+        if top not in _SAFE_MODULES:
+            raise ImportError(f"Module '{{name}}' is not allowed in sandbox")
+        return __builtins__.__import__(name, globals, locals, fromlist, level)
+
     # The runner is OUR code; the user's code runs in a restricted namespace
     # that we set up BELOW this line.
     user_code = {code!r}
@@ -265,13 +295,14 @@ _RUNNER_TEMPLATE = textwrap.dedent('''
     # Build the user-facing namespace with restricted builtins.
     # We deliberately do NOT include open, __import__, eval, exec, compile,
     # getattr/setattr/delattr, globals/locals/vars/dir, breakpoint, or any
-    # OS-sensitive builtins. Generic exception handling is enabled.
+    # OS-sensitive builtins. Only pure data-transform functions are allowed.
+    # File I/O and module import are ALWAYS denied in sandboxed mode.
     allowed = {{"abs": abs, "sum": sum, "len": len, "print": print, "range": range,
                 "int": int, "str": str, "list": list, "dict": dict, "tuple": tuple,
-                "set": set, "float": float, "bool": bool, "enumerate": enumerate,
-                "zip": zip, "map": map, "filter": filter, "sorted": sorted,
-                "min": min, "max": max, "type": type,
-                "isinstance": isinstance,
+                "set": set, "frozenset": frozenset, "float": float, "bool": bool,
+                "enumerate": enumerate, "zip": zip, "map": map, "filter": filter,
+                "sorted": sorted, "reversed": reversed, "min": min, "max": max,
+                "type": type, "isinstance": isinstance, "issubclass": issubclass,
                 "iter": iter, "next": next, "StopIteration": StopIteration,
                 "True": True, "False": False, "None": None,
                 "BaseException": BaseException, "Exception": Exception,
@@ -281,10 +312,9 @@ _RUNNER_TEMPLATE = textwrap.dedent('''
                 "KeyError": KeyError, "IndexError": IndexError,
                 "ZeroDivisionError": ZeroDivisionError,
                 "NotImplementedError": NotImplementedError,
-                 "ArithmeticError": ArithmeticError, "LookupError": LookupError,
-                 "open": open, "__build_class__": __build_class__}}
-    if not paranoid:
-        allowed["__import__"] = __import__
+                "ArithmeticError": ArithmeticError, "LookupError": LookupError,
+                "open": _safe_open, "__import__": _safe_import,
+                "__build_class__": __build_class__}}
 
     try:
         exec(compile(user_code, "<sandbox>", "exec"),
@@ -355,6 +385,7 @@ def run_isolated(
         code=code,
         paranoid=("True" if level >= OSIsolationLevel.PARANOID else "False"),
         is_sandboxed=("True" if sb_path else "False"),
+        sandbox_dir=str(sandbox_dir.resolve()),
     )
 
     if sb_path:

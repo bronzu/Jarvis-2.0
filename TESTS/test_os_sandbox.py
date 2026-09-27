@@ -197,6 +197,7 @@ class TestOSSandboxPrimitivesEnforced(unittest.TestCase):
             code="print('user-ok')",
             paranoid="False",
             is_sandboxed="True",
+            sandbox_dir=str(SANDBOX_DIR.resolve()),
         )
         # Inject diagnostic block right after the is_sandboxed block,
         # before the user code runs.

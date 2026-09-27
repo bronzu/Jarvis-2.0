@@ -1,5 +1,6 @@
 import os
 import re
+import shlex
 from pathlib import Path
 
 from INFRASTRUCTURE.security.permission_guard import PermissionGuard
@@ -102,14 +103,68 @@ class TerminalTool:
     def _validate_command_safety(self, command):
         """
         Verifica che il comando non contenga pattern pericolosi.
+
+        Usa un'allowlist di comandi ammessi. Qualsiasi comando il cui
+        nome programma non compare nell'allowlist viene rifiutato.
+        Inoltre vengono bloccati esplicitamente interpreti e tool di rete.
         """
         if not isinstance(command, str):
             raise TypeError("Il comando deve essere una stringa.")
-        
-        # Blocca pattern pericolosi
+
+        # Parse the command to extract the program name
+        try:
+            tokens = shlex.split(command, posix=True)
+        except ValueError:
+            tokens = command.split()
+
+        if tokens:
+            program = tokens[0].lower()
+            program_basename = program.split("/")[-1]
+
+            # Block interpreters (python, python3, perl, node, php, etc.)
+            for name in ("python", "python2", "python3", "perl", "ruby",
+                         "node", "php", "bash", "sh", "zsh", "csh", "tcsh",
+                         "dash", "awk", "sed"):
+                if program_basename == name:
+                    self._log_violation(
+                        f"Interpreter invocation blocked: {program_basename}",
+                        "interpreter_block",
+                    )
+                    raise PermissionError(
+                        f"Invocazione di interpreti bloccata: {program_basename}"
+                    )
+
+            # Block network exfiltration tools (curl, wget, nc, ssh, scp, rsync)
+            for name in ("curl", "wget", "nc", "ncat", "netcat", "ssh",
+                         "scp", "sftp", "rsync", "telnet", "tftp", "ftp",
+                         "socat", "openssl"):
+                if program_basename == name:
+                    self._log_violation(
+                        f"Network tool invocation blocked: {program_basename}",
+                        "network_tool_block",
+                    )
+                    raise PermissionError(
+                        f"Strumento di rete bloccato: {program_basename}"
+                    )
+
+            # Allowlist enforcement
+            allowed = set(self.permission_guard.ALLOWED_COMMANDS)
+            if program_basename not in allowed:
+                self._log_violation(
+                    f"Command not in allowlist: {program_basename}",
+                    "allowlist_violation",
+                )
+                raise PermissionError(
+                    f"Comando non autorizzato (non nella allowlist): {program_basename}"
+                )
+
+        # Defense-in-depth: still check denylist patterns
         for pattern in self.DANGEROUS_COMMAND_PATTERNS:
             if re.search(pattern, command, re.IGNORECASE):
-                self._log_violation(f"Dangerous pattern detected: {pattern} in {command}", "dangerous_pattern")
+                self._log_violation(
+                    f"Dangerous pattern detected: {pattern} in {command}",
+                    "dangerous_pattern",
+                )
                 raise PermissionError(f"Comando contiene pattern pericoloso: {pattern}")
 
     def _check_jarvis_internal_access(self, command):

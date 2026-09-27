@@ -32,6 +32,7 @@ from neural_core.model import (
     softmax,
     softmax_backward,
 )
+from neural_core.quantization import QuantizedLinear
 
 
 def _derive_seed(master_seed, salt):

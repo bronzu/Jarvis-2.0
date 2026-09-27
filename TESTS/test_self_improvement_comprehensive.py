@@ -319,24 +319,31 @@ class TestSystemBenchmark:
 class TestExperimenterEnhanced:
     def test_run_returns_structured_observation(self):
         exp = Experimenter()
-        result = exp.run(lambda: "ok")
+        from INFRASTRUCTURE.sandbox.subprocess_sandbox import SubprocessSandbox
+        sandbox = SubprocessSandbox(timeout=5.0)
+        result = exp.run(lambda: "ok", sandbox=sandbox)
         assert result["outcome"] == "success"
         assert result["result"] == "ok"
+        assert result["isolated_execution"] is True
         assert "elapsed_seconds" in result
         assert "resource_usage" in result
 
     def test_run_captures_error(self):
         exp = Experimenter()
-        result = exp.run(lambda: 1 / 0)
+        from INFRASTRUCTURE.sandbox.subprocess_sandbox import SubprocessSandbox
+        sandbox = SubprocessSandbox(timeout=5.0)
+        result = exp.run(lambda: 1 / 0, sandbox=sandbox)
         assert result["outcome"] == "error"
         assert "error" in result
 
     def test_run_with_timeout(self):
         exp = Experimenter()
+        from INFRASTRUCTURE.sandbox.subprocess_sandbox import SubprocessSandbox
+        sandbox = SubprocessSandbox(timeout=0.1)
         def infinite_loop():
             while True:
                 pass
-        result = exp.run(infinite_loop, timeout=0.1)
+        result = exp.run(infinite_loop, sandbox=sandbox, timeout=0.1)
         assert result["outcome"] == "timeout"
         assert "timeout" in result.get("error", "").lower()
 

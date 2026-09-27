@@ -58,6 +58,14 @@ _DENIED_ATTRS = {
     "__code__", "__func__", "__self__", "__module__", "__qualname__",
 }
 
+# Patterns whose presence inside *any* string literal indicates an escape
+# attempt via str.format() or %-formatting. When these names appear inside a
+# string literal, the string may be used as a format template to reach hidden
+# attributes at runtime (bypassing the AST attribute-access gate).
+_DENIED_ATTR_LITERAL_PATTERNS = [
+    re.compile(rf"{re.escape(attr)}") for attr in _DENIED_ATTRS
+]
+
 # Literal call patterns that indicate shell-out / filesystem-write attempts.
 _LITERAL_DENY_PATTERNS = [
     re.compile(r"os\s*\.\s*system"),
@@ -94,17 +102,33 @@ def _ast_has_denied(code: str) -> str:
                     return f"call to denied attribute '{func.attr}'"
                 if func.attr in _DENIED_ATTRS:
                     return f"access to denied attribute '{func.attr}'"
+                if isinstance(func.value, ast.Constant) and isinstance(func.value.value, str) and func.attr == "format":
+                    return "str.format() on string literal is blocked (format-string escape vector)"
         # Attribute access to dunder introspection (must be in any context)
         if isinstance(node, ast.Attribute) and node.attr in _DENIED_ATTRS:
             return f"access to denied attribute '{node.attr}'"
+        # Ban % formatting on string constants (another escape vector)
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
+            if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str):
+                return "modulo (%) formatting on string literal is blocked (format-string escape vector)"
     return ""
 
 
 def _literal_has_denied(code: str) -> str:
-    """Defense-in-depth: even if the AST is mis-parsed, deny literal patterns."""
+    """Defense-in-depth: even if the AST is mis-parsed, deny literal patterns.
+
+    Also scans inside string literals for denied attribute names that could
+    be used as format-string templates (e.g. ``"{0.__class__}".format(...)``).
+    """
     for pat in _LITERAL_DENY_PATTERNS:
         if pat.search(code):
             return f"denied literal pattern matched: {pat.pattern}"
+
+    # Scan string-literal contents for denied attribute names
+    for pat in _DENIED_ATTR_LITERAL_PATTERNS:
+        if pat.search(code):
+            return f"denied attribute name found in string literal: {pat.pattern}"
+
     return ""
 
 

@@ -2,6 +2,7 @@ import pytest
 
 from expansion_system.discovery.discovery_engine import DiscoveryEngine
 from expansion_system.discovery.experimenter import Experimenter
+from INFRASTRUCTURE.sandbox.subprocess_sandbox import SubprocessSandbox
 
 
 class TestDiscoveryEngine:
@@ -43,11 +44,40 @@ class TestDiscoveryEngine:
 class TestExperimenter:
     def test_run_success(self):
         exp = Experimenter()
-        result = exp.run(lambda: "ok")
+        sandbox = SubprocessSandbox(timeout=5.0)
+        result = exp.run(lambda: "ok", sandbox=sandbox)
         assert result["outcome"] == "success"
         assert result["result"] == "ok"
+        assert result["isolated_execution"] is True
 
     def test_run_error(self):
         exp = Experimenter()
-        result = exp.run(lambda: 1 / 0)
+        sandbox = SubprocessSandbox(timeout=5.0)
+        result = exp.run(lambda: 1 / 0, sandbox=sandbox)
         assert result["outcome"] == "error"
+
+    def test_run_without_sandbox_rejected(self):
+        """Callable experiments without a sandbox must be rejected."""
+        exp = Experimenter()
+        with pytest.raises(PermissionError):
+            exp.run(lambda: "ok")
+
+    def test_run_with_hyperparameters_no_sandbox_allowed(self):
+        """Hyperparameter dict experiments work without sandbox (documented)."""
+        exp = Experimenter()
+        result = exp.run({"learning_rate": 0.01, "epochs": 10})
+        assert result["outcome"] == "success"
+        assert result["hyperparameter_only"] is True
+        assert result["isolated_execution"] is False
+
+    def test_run_privileged_action_blocked_without_sandbox(self):
+        """Privileged callable without sandbox must be blocked."""
+        exp = Experimenter()
+
+        def privileged():
+            with open("/tmp/_exp_privileged_test", "w") as f:
+                f.write("EXPLOIT")
+            return "executed"
+
+        with pytest.raises(PermissionError):
+            exp.run(privileged, sandbox=None)

@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 
 from expansion_system.self_improvement.training_strategy import TrainingStrategy
-from neural_core.trainer import Trainer, build_model
+from neural_core.trainer import Trainer, build_model, safe_pickle_load
 from neural_core.tokenizer import Tokenizer
 from neural_core.dataset import Dataset
 from neural_core.loss import CrossEntropyLoss
@@ -91,7 +91,7 @@ class ExperimentalTrainer:
             return _load_checkpoint_safe(checkpoint_path)
         except Exception:
             with open(checkpoint_path, "rb") as f:
-                data = pickle.load(f)
+                data = safe_pickle_load(f)
         if not isinstance(data, dict):
             raise ValueError("Formato checkpoint non valido")
         return data

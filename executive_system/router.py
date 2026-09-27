@@ -11,7 +11,7 @@ from INFRASTRUCTURE.security.security_layer import SecurityLayer
 from cognitive_core.vision.vision_system import VisionSystem
 from neural_core.tokenizer import Tokenizer
 from neural_core.model_interface import NeuralModelInterface
-from neural_core.trainer import Trainer, NextTokenModel, load_model_from_weights
+from neural_core.trainer import Trainer, NextTokenModel, load_model_from_weights, safe_pickle_load
 from neural_core.loss import CrossEntropyLoss
 from neural_core.optimizer import Adam
 from cognitive_core.identity.identity_resolver import IdentityResolver
@@ -104,7 +104,7 @@ class ExecutiveRouter:
         if path.exists():
             try:
                 with open(path, "rb") as f:
-                    return pickle.load(f)
+                    return safe_pickle_load(f)
             except Exception:
                 pass
 

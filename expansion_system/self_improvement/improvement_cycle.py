@@ -18,7 +18,9 @@ from expansion_system.discovery.experimenter import Experimenter
 from INFRASTRUCTURE.security.permission_guard import PermissionGuard
 from INFRASTRUCTURE.security.security_layer import SecurityLayer
 from INFRASTRUCTURE.audit.audit_system import AuditSystem
+from INFRASTRUCTURE.sandbox.subprocess_sandbox import SubprocessSandbox
 from executive_system.action_executor import ActionExecutor
+from neural_core.trainer import safe_pickle_load
 
 
 class ImprovementCycle:
@@ -212,7 +214,7 @@ class ImprovementCycle:
         for candidate in candidates:
             candidate_id = candidate["id"]
             experiment_fn = self._build_experiment(candidate)
-            sandbox = self.sandbox_factory() if self.sandbox_factory else None
+            sandbox = self.sandbox_factory() if self.sandbox_factory else SubprocessSandbox(timeout=30.0)
             try:
                 observation = self.experimenter.run(experiment_fn, sandbox=sandbox, timeout=30.0)
                 results.append({
@@ -788,7 +790,7 @@ class ImprovementCycle:
                     data = _load_checkpoint_safe(checkpoint_path)
                 except Exception:
                     with open(checkpoint_path, "rb") as f:
-                        data = pickle.load(f)
+                        data = safe_pickle_load(f)
             if not isinstance(data, dict):
                 return {"valid": False, "error": "Formato checkpoint non valido"}
             params = data.get("parameters") or data.get("model_parameters") or []

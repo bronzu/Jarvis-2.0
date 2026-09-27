@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 from pathlib import Path
 from executive_system.capability_registry import CapabilityRegistry
@@ -127,18 +128,19 @@ class ToolSystem:
     def _subprocess_runner(command: str) -> str:
         """Safe subprocess runner for terminal commands.
 
-        Uses ``subprocess.run`` with ``shell=True`` only after the
-        command has passed all security checks in ``TerminalTool``.
-        Output is captured as text.  The working directory is inherited
-        from the calling process; ``TerminalTool`` already restricts
-        paths via its own ``_safe_path`` and ``_validate_command_safety``
-        gates.
+        Uses ``subprocess.run`` with ``shell=False`` and ``shlex.split``
+        to avoid shell injection.  The command has already passed all
+        security checks in ``TerminalTool`` and ``PermissionGuard`` (which
+        now enforce an allowlist).  Output is captured as text.
         """
         if not isinstance(command, str):
             raise TypeError("command must be a string")
+        argv = shlex.split(command)
+        if not argv:
+            raise ValueError("command is empty after shlex parsing")
         completed = subprocess.run(
-            command,
-            shell=True,
+            argv,
+            shell=False,
             capture_output=True,
             text=True,
             check=False,

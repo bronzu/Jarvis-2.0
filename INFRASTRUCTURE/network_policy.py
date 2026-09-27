@@ -70,11 +70,11 @@ class NetworkPolicy:
             return {"allowed": False, "reason": "invalid_host"}
 
         for blocked in self.blocked_hosts:
-            if blocked.lower() in host:
+            if self._host_matches(blocked, host) or host == blocked.lower().strip():
                 return {"allowed": False, "reason": f"blocked_host:{blocked}"}
 
         if self.allowed_hosts:
-            if not any(h.lower() in host for h in self.allowed_hosts):
+            if not any(self._host_matches(h, host) for h in self.allowed_hosts):
                 return {"allowed": False, "reason": "host_not_in_allowlist"}
 
         if port is not None:
@@ -87,6 +87,23 @@ class NetworkPolicy:
 
     def is_enabled(self) -> bool:
         return self.enabled
+
+    @staticmethod
+    def _host_matches(pattern: str, host: str) -> bool:
+        """Match a host against an allowlist pattern using domain suffix logic.
+
+        ``example.com`` matches ``example.com`` and ``api.example.com`` but
+        NOT ``notexample.com`` or ``example.com.evil.com``.
+        """
+        pattern = pattern.lower().strip()
+        host = host.lower().strip()
+        if not host or not pattern:
+            return False
+        if host == pattern:
+            return True
+        if host.endswith("." + pattern):
+            return True
+        return False
 
     def summary(self) -> Dict[str, Any]:
         return {

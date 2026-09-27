@@ -23,6 +23,11 @@ import os
 import pickle
 import platform
 import sys
+import io as _io
+
+import numpy as np
+
+from neural_core.trainer import safe_pickle_load, safe_pickle_loads
 import time
 from pathlib import Path
 
@@ -118,7 +123,7 @@ def smoke_test_torch(entry, device):
     try:
         params = model.get_parameters()
         buf = pickle.dumps(params)
-        loaded = pickle.loads(buf)
+        loaded = safe_pickle_loads(buf)
         model.set_parameters(loaded)
         reloaded_pc = model.parameter_count()
         ok = (reloaded_pc == material_pc) and np.array_equal(

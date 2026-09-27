@@ -26,11 +26,14 @@ Funzionalità di training:
 """
 
 import hashlib
+import io
 import json
 import os
 import pickle
+import pickle as _pickle_module
+import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -39,6 +42,100 @@ from neural_core.tokenizer import Tokenizer
 from neural_core.loss import CrossEntropyLoss
 from neural_core.model import gelu, gelu_derivative
 from neural_core.optimizer import Adam, LearningRateScheduler
+
+
+_ALLOWED_PICKLE_MODULES = {
+    "numpy",
+    "numpy.core",
+    "numpy.core.multiarray",
+    "builtins",
+    "collections",
+    "collections.abc",
+    "typing",
+}
+
+_ALLOWED_BUILTIN_CLASSES = {
+    "list", "dict", "tuple", "set", "frozenset",
+    "str", "int", "float", "bool", "bytes",
+    "complex", "range", "slice",
+    "OrderedDict", "defaultdict", "Counter",
+}
+
+_BLOCKED_BUILTIN_NAMES = {
+    "eval", "exec", "compile", "__import__", "open",
+    "globals", "locals", "vars", "dir", "getattr", "setattr",
+    "delattr", "hasattr", "input",
+    "os", "sys", "subprocess", "pickle", "marshal",
+}
+
+
+class SafeUnpickler(_pickle_module.Unpickler):
+    """Unpickler that forbids arbitrary code execution.
+
+    Only allows deserialization of:
+    - numpy arrays and scalars (via numpy and numpy._core internal classes)
+    - Basic builtins (list, dict, tuple, set, etc.)
+    - collections (OrderedDict, defaultdict, Counter)
+
+    Raises ``PermissionError`` for any other class, effectively neutralizing
+    ``__reduce__``-based RCE payloads (e.g. ``os.system``, ``eval``,
+    ``__import__``).
+    """
+
+    def find_class(self, module, name):
+        # Allow numpy and its internal submodules (e.g. numpy._core.numeric) —
+        # these are needed to reconstruct ndarray/scalar objects.
+        if module == "numpy" or module.startswith("numpy."):
+            return super().find_class(module, name)
+        if module in _ALLOWED_PICKLE_MODULES:
+            if module == "builtins" and name in _BLOCKED_BUILTIN_NAMES:
+                raise PermissionError(
+                    f"Deserializzazione pickle bloccata: builtins.{name} è pericoloso"
+                )
+            if module == "collections" and name in _BLOCKED_BUILTIN_NAMES:
+                raise PermissionError(
+                    f"Deserializzazione pickle bloccata: collections.{name}"
+                )
+            if module == "builtins" and name in _ALLOWED_BUILTIN_CLASSES:
+                return super().find_class(module, name)
+            if module == "collections" and name in _ALLOWED_BUILTIN_CLASSES:
+                return super().find_class(module, name)
+            if module == "typing":
+                return super().find_class(module, name)
+            # Other allowed modules (e.g. collections.abc) — permit
+            return super().find_class(module, name)
+        raise PermissionError(
+            f"Deserializzazione pickle bloccata per modulo sconosciuto: {module}.{name}"
+        )
+
+
+def safe_pickle_load(file_obj, max_bytes: int = 256 * 1024 * 1024) -> Any:
+    """Deserialize a pickle stream using SafeUnpickler (blocks RCE payloads)."""
+    return SafeUnpickler(file_obj).load()
+
+
+def safe_pickle_loads(data: bytes, max_bytes: int = 256 * 1024 * 1024) -> Any:
+    """Deserialize a pickle byte string using SafeUnpickler (blocks RCE payloads)."""
+    return SafeUnpickler(io.BytesIO(data)).load()
+
+
+def _is_trusted_internal_path(path: str, allowed_roots: Optional[List[str]] = None) -> bool:
+    """Constrain weight/checkpoint/tokenizer loading to trusted internal dirs."""
+    if allowed_roots is None:
+        repo_root = str(Path(__file__).resolve().parents[1])
+        allowed_roots = [
+            str(Path(repo_root) / "neural_core" / "data"),
+            str(Path(repo_root) / "neural_core"),
+            str(Path(repo_root) / "CORE"),
+        ]
+    try:
+        real = str(Path(path).resolve())
+        for root in allowed_roots:
+            if real.startswith(str(Path(root).resolve())):
+                return True
+    except Exception:
+        pass
+    return False
 
 
 def _derive_seed(master_seed, salt):
@@ -299,7 +396,7 @@ def load_model_from_weights(path, vocab_size: Optional[int] = None):
         payload = _load_weights_safe(path)
     except Exception:
         with open(path, "rb") as handle:
-            payload = pickle.load(handle)
+            payload = safe_pickle_load(handle)
 
     if not isinstance(payload, dict):
         raise ValueError("File dei pesi non valido.")
@@ -1273,7 +1370,7 @@ class Trainer:
             state = _load_checkpoint_safe(str(source))
         except Exception:
             with open(source, "rb") as handle:
-                state = pickle.load(handle)
+                state = safe_pickle_load(handle)
 
         if not isinstance(state, dict) or state.get("format") != self.CHECKPOINT_FORMAT:
             raise ValueError("Formato di checkpoint non riconosciuto.")
@@ -1416,7 +1513,7 @@ class Trainer:
             self.tokenizer = Tokenizer.load(path)
         else:
             with open(path, "rb") as file:
-                self.tokenizer = pickle.load(file)
+                self.tokenizer = safe_pickle_load(file)
 
     def save_weights(self, path: str) -> None:
         """
@@ -1454,7 +1551,7 @@ class Trainer:
                 params = _load_weights_safe(str(source))
             except Exception:
                 with open(path, "rb") as file:
-                    params = pickle.load(file)
+                    params = safe_pickle_load(file)
         else:
             raise FileNotFoundError(f"File dei pesi non trovato: {path}")
 
