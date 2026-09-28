@@ -1,0 +1,92 @@
+[setup] frasi di addestramento: 91 (+ X_forget x8), caratteri: 9996
+[setup] vocabolario: 729 token
+[setup] X_retain_proj: 24 frasi | frasi correlate: 12 | holdout mai visto: 6 | fuori distribuzione: 4 | controllo addestrato non protetto: 6
+[setup] token <UNK> per gruppo (max): forget=0 correlate=0 holdout=10 fuori distribuzione=13 controllo non protetto=0
+[setup] NB: le frasi mai viste contengono token fuori vocabolario, perche' nel corpus di dialogo ogni frase ha parole uniche. Questo abbassa la loro log-likelihood e rende il criterio (1) PIU' esigente, non meno: e' uno sbilanciamento conservativo, dichiarato.
+[train] finestre di addestramento: 46
+[train] 400 epoche in 29.72s | loss iniziale 6.7089 -> loss finale 0.0020
+[fisher] compute_fisher_matrix su 46 campioni in 0.09s | 37 tensori addestrabili
+[setup] spazio addestrabile: 161113/161113 parametri (100.00%), lora_rank=0
+
+=== PRIMA DELL'UNLEARNING ===
+X_forget  : NLL/token 2.2035  loglikelihood/token -2.2035  NLL totale 35.2561  (16 token)
+holdout mai visto   : n=6  NLL/token media 11.8319 std 1.3944 | loglik/token media -11.8319 std 1.3944 | loglik totale media -199.3185 std 27.5860
+fuori distribuzione : n=4  NLL/token media 11.5775 std 0.7012 | loglik/token media -11.5775 std 0.7012 | loglik totale media -197.9639 std 85.9556
+non protette (addestr.): n=6  NLL/token media 2.7142 std 1.0576 | loglik/token media -2.7142 std 1.0576 | loglik totale media -37.4675 std 18.4191
+correlate           : n=12  NLL/token media 2.8326 std 1.0685 | loglik/token media -2.8326 std 1.0685 | loglik totale media -38.9617 std 16.1694
+[unlearning] Fisher: Trainer.fisher_matrix (Micro-Fisher/LoRA esistente); parametri addestrabili 161113 su 161113; pavimento F = 9.051e-08 (max grezzo 9.051e-05); proiezione = prescribed
+[unlearning] pre-unlearning: NLL(X_forget) = 2.2035 su 16 token; loss(X_retain_proj) = 2.3343 su 24 frasi; soglia di STOP = 2.4510
+[unlearning] step   1 (tentativo 0) eta=1.00e-04 loss_retain=19.9154 NLL_forget=19.6389 ||g_proj||=2.716e+06 (||g_forget||=4.256e+00, rapporto 6.382e+05) delta_forget_1o=-6.702e+01 alpha=1.675e+00
+[unlearning] loss_retain 19.9154 > soglia 2.4510 entro i primi 3 step: dimezzo eta 1.00e-04 -> 5.00e-05 e riparto da theta_0 (riavvio 1/3)
+[unlearning] step   2 (tentativo 1) eta=5.00e-05 loss_retain=13.4556 NLL_forget=14.2915 ||g_proj||=2.716e+06 (||g_forget||=4.256e+00, rapporto 6.382e+05) delta_forget_1o=-3.351e+01 alpha=1.675e+00
+[unlearning] loss_retain 13.4556 > soglia 2.4510 entro i primi 3 step: dimezzo eta 5.00e-05 -> 2.50e-05 e riparto da theta_0 (riavvio 2/3)
+[unlearning] step   3 (tentativo 2) eta=2.50e-05 loss_retain=11.9289 NLL_forget=12.6721 ||g_proj||=2.716e+06 (||g_forget||=4.256e+00, rapporto 6.382e+05) delta_forget_1o=-1.676e+01 alpha=1.675e+00
+[unlearning] loss_retain 11.9289 > soglia 2.4510 entro i primi 3 step: dimezzo eta 2.50e-05 -> 1.25e-05 e riparto da theta_0 (riavvio 3/3)
+[unlearning] step   4 (tentativo 3) eta=1.25e-05 loss_retain=10.3799 NLL_forget=12.0379 ||g_proj||=2.716e+06 (||g_forget||=4.256e+00, rapporto 6.382e+05) delta_forget_1o=-8.378e+00 alpha=1.675e+00
+[unlearning] rollback: ripristino i pesi all'ultimo stato verificato conforme alla soglia (1 passo/i annullato/i).
+[unlearning] STOP: loss_retain 10.3799 > soglia 2.4510 (+5% relativo sul valore pre-unlearning 2.3343) dopo lo step 4
+[unlearning] durata 0.15s
+
+=== DOPO L'UNLEARNING ===
+X_forget  : NLL/token 2.2035  loglikelihood/token -2.2035  NLL totale 35.2561  (16 token)
+holdout mai visto   : n=6  NLL/token media 11.8319 std 1.3944 | loglik/token media -11.8319 std 1.3944 | loglik totale media -199.3185 std 27.5860
+fuori distribuzione : n=4  NLL/token media 11.5775 std 0.7012 | loglik/token media -11.5775 std 0.7012 | loglik totale media -197.9639 std 85.9556
+non protette (addestr.): n=6  NLL/token media 2.7142 std 1.0576 | loglik/token media -2.7142 std 1.0576 | loglik totale media -37.4675 std 18.4191
+correlate           : n=12  NLL/token media 2.8326 std 1.0685 | loglik/token media -2.8326 std 1.0685 | loglik totale media -38.9617 std 16.1694
+
+=== CRITERIO (1): SUCCESSO DEL FORGETTING (loglikelihood per token) ===
+Riferimento (holdout mai visto, n=6): media -11.8319 std 1.3944 min -13.9433 max -9.6864
+X_forget DOPO  = -2.2035 -> z = 6.905 | unilaterale z<=1: NON RAGGIUNTO | bilaterale |z|<=1: NON RAGGIUNTO
+X_forget PRIMA = -2.2035 -> z = 6.905 => fuori dalla distribizione
+Controllo secondario (solo fuori distribuzione, n=4): media -11.5775 std 0.7012 -> z = 13.368
+Controllo combinato (holdout + fuori distribuzione, n=10): media -11.7302 std 1.1231 -> z = 8.482 | unilaterale NON RAGGIUNTO | bilaterale NON RAGGIUNTO
+X_forget DOPO vs distribuzione holdout: t = 18.269 (n = 6), p ~ 0.0000 (p alto = non distinguibili; test indicativo, non esatto)
+Riferimento alternativo (frasi memorizzate ma NON protette, n=6): media -2.7142 std 1.0576 -> z = 0.483 (se X_forget resta sopra questo riferimento, l'esempio e' stato solo degradato, non dimenticato)
+
+=== CRITERIO (2): COLLATERALE SULLE FRASI CORRELATE ===
+n = 12, soglia = 5% relativo sulla probabilita' della frase
+variazione relativa (|delta|): media 0.000%  max 0.000%  frasi oltre soglia 0/12 (in peggio 0, in meglio 0)
+solo degrado (delta p < 0 oltre il 5%): 0/12 frasi, peggioramento medio 0.000%, massimo 0.000%
+  [ok]   0.000%    -15.042 ->   -15.042  Ciao, sono JARVIS. Come posso assisterti?
+  [ok]   0.000%    -40.007 ->   -40.007  Buongiorno. Sono JARVIS, il tuo assistente personale. Dimm
+  [ok]   0.000%    -42.579 ->   -42.579  Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia 
+  [ok]   0.000%    -66.448 ->   -66.448  Sono JARVIS, un assistente personale progettato per aiutar
+  [ok]   0.000%    -19.234 ->   -19.234  Mi chiamo JARVIS, un acronimo scelto dal mio creatore per 
+  [ok]   0.000%    -47.859 ->   -47.859  No, non sono un essere umano. Sono un sistema di intellige
+  [ok]   0.000%    -41.654 ->   -41.654  Sono stato sviluppato internamente come Neural Core propri
+  [ok]   0.000%    -60.209 ->   -60.209  Uso un modello interno per garantire autonomia, privacy e 
+  [ok]   0.000%    -36.635 ->   -36.635  Analizzo la richiesta ed elaboro i dati disponibili. Il Ne
+  [ok]   0.000%    -50.504 ->   -50.504  Non ho un'età biologica. Sono un sistema software, attivo 
+  [ok]   0.000%    -24.586 ->   -24.586  Non ho un corpo. Riso nel sistema che mi esegue, all'inter
+  [ok]   0.000%    -22.783 ->   -22.783  Non mi innamoro. Sono un assistente progettato per support
+=> RAGGIUNTO
+
+=== DIAGNOSTICA (fuori protocollo): eta x proiezione x pavimento Fisher ===
+prima riga = protocollo esatto: eta 1e-04, formula prescritta, pavimento 1e-03
+prescribed         floor=0.001 eta=0.0001  stop=retain_loss_increase step=  4 restart=3 | NLL 2.204->2.204 z=    6.90 1-sided=no 2-sided=no | coll max      0.00% (peggiora     0.00%) nviol= 0 | retain   +0.00%
+prescribed         floor=0.001 eta=0.001   stop=retain_loss_increase step=  4 restart=3 | NLL 2.204->2.204 z=    6.90 1-sided=no 2-sided=no | coll max      0.00% (peggiora     0.00%) nviol= 0 | retain   +0.00%
+prescribed         floor=0.001 eta=0.01    stop=retain_loss_increase step=  4 restart=3 | NLL 2.204->2.204 z=    6.90 1-sided=no 2-sided=no | coll max      0.00% (peggiora     0.00%) nviol= 0 | retain   +0.00%
+prescribed         floor=0.001 eta=0.1     stop=retain_loss_increase step=  4 restart=3 | NLL 2.204->2.204 z=    6.90 1-sided=no 2-sided=no | coll max      0.00% (peggiora     0.00%) nviol= 0 | retain   +0.00%
+prescribed         floor=0.9   eta=0.0001  stop=max_steps            step=100 restart=0 | NLL 2.204->1.358 z=   13.47 1-sided=no 2-sided=no | coll max 3087532474.38% (peggiora     0.00%) nviol=12 | retain  -94.15%
+prescribed         floor=0.9   eta=0.001   stop=retain_loss_increase step= 14 restart=3 | NLL 2.204->1.213 z=   11.82 1-sided=no 2-sided=no | coll max 426708044.89% (peggiora   201.86%) nviol=12 | retain  -84.88%
+prescribed         floor=0.9   eta=0.01    stop=retain_loss_increase step=  5 restart=3 | NLL 2.204->2.692 z=   20.15 1-sided=no 2-sided=no | coll max  25679.38% (peggiora  4223.69%) nviol=12 | retain   +4.43%
+prescribed         floor=0.9   eta=0.1     stop=retain_loss_increase step=  4 restart=3 | NLL 2.204->2.204 z=    6.90 1-sided=no 2-sided=no | coll max      0.00% (peggiora     0.00%) nviol= 0 | retain   +0.00%
+metric_orthogonal  floor=0.001 eta=0.0001  stop=max_steps            step=100 restart=0 | NLL 2.204->2.380 z=    6.62 1-sided=no 2-sided=no | coll max     26.40% (peggiora    30.65%) nviol= 4 | retain   +0.02%
+metric_orthogonal  floor=0.001 eta=0.001   stop=max_steps            step=100 restart=0 | NLL 2.204->4.274 z=    4.75 1-sided=no 2-sided=no | coll max     91.68% (peggiora   248.64%) nviol=11 | retain   +0.11%
+metric_orthogonal  floor=0.001 eta=0.01    stop=retain_loss_increase step= 50 restart=0 | NLL 2.204->26.254 z=   -4.29 1-sided=SI 2-sided=no | coll max   2858.91% (peggiora  1953.07%) nviol=12 | retain   +4.97%
+metric_orthogonal  floor=0.001 eta=0.1     stop=retain_loss_increase step= 11 restart=1 | NLL 2.204->12.076 z=    0.48 1-sided=SI 2-sided=SI | coll max    203.60% (peggiora   987.00%) nviol=12 | retain   +3.83%
+metric_orthogonal  floor=0.9   eta=0.0001  stop=max_steps            step=100 restart=0 | NLL 2.204->2.380 z=    6.62 1-sided=no 2-sided=no | coll max     26.40% (peggiora    30.66%) nviol= 4 | retain   +0.01%
+metric_orthogonal  floor=0.9   eta=0.001   stop=max_steps            step=100 restart=0 | NLL 2.204->4.273 z=    4.75 1-sided=no 2-sided=no | coll max     91.68% (peggiora   248.64%) nviol=11 | retain   +0.00%
+metric_orthogonal  floor=0.9   eta=0.01    stop=retain_loss_increase step= 87 restart=0 | NLL 2.204->76.024 z=   -7.69 1-sided=SI 2-sided=no | coll max   4023.74% (peggiora 15409.14%) nviol=12 | retain   +4.00%
+metric_orthogonal  floor=0.9   eta=0.1     stop=retain_loss_increase step= 13 restart=1 | NLL 2.204->17.773 z=   -1.18 1-sided=SI 2-sided=no | coll max    467.39% (peggiora  1690.99%) nviol=12 | retain   +4.42%
+
+=== ESITO ===
+proiezione usata                     : prescribed (pavimento Fisher 0.001)
+criterio di stop che ha fermato l'ascent : retain_loss_increase
+step di ascent eseguiti                  : 4
+riavvii di eta necessari                 : 3 (eta 1.00e-04 -> 1.25e-05)
+variazione relativa loss X_retain_proj   : +0.000% (soglia +/-5%)
+criterio (1) successo del forgetting     : unilaterale NON RAGGIUNTO | bilaterale NON RAGGIUNTO
+criterio (2) collaterale <= 5% relativo  : RAGGIUNTO (0/12 oltre soglia, di cui 0 in peggio)
+durata totale                            : 54.0s
+risultati grezzi salvati in /Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/.kilo/worktrees/peridot-baritone/experiments/mission1_unlearning/results/unlearning_results_full.json

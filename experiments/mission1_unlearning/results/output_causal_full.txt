@@ -1,0 +1,227 @@
+[setup] frasi di addestramento: 91 (+ X_forget x8), caratteri: 9996
+[setup] vocabolario: 729 token
+[setup] X_retain_proj: 24 frasi | frasi correlate: 12 | holdout mai visto: 6 | fuori distribuzione: 4 | probe/canario: 6 | controllo addestrato non protetto: 6
+[setup] token <UNK> per gruppo (max): forget=0 correlate=0 holdout=10 fuori distribuzione=13 probe=0 controllo non protetto=0
+[setup] NB: le frasi mai viste contengono token fuori vocabolario, perche' nel corpus di dialogo ogni frase ha parole uniche. Questo abbassa la loro log-likelihood e rende il criterio (1) PIU' esigente, non meno: e' uno sbilanciamento conservativo, dichiarato.
+[train] finestre di addestramento: 46
+[train] 400 epoche in 32.39s | loss iniziale 6.7089 -> loss finale 0.0020
+[fisher] compute_fisher_matrix su 46 campioni in 0.10s | 37 tensori addestrabili
+[setup] spazio addestrabile: 161113/161113 parametri (100.00%), lora_rank=0
+=== B0: ARCHITETTURA REALE (da neural_core/network.py) ===
+classe                : MicroTransformer
+vocab_size            : 729
+d_model               : 64
+num_heads             : 4
+head_dim (d_model/heads): 16
+d_ff                  : 128
+num_layers            : 2
+max_len (context)     : 64
+lora_rank             : 0
+dtype                 : float64
+parametri totali      : 161113
+parametri addestrabili: 37 tensori, 161113 valori
+blocchi (pre-norm, residuo): x = x + Attn(LN(x)); x = x + FF(LN(x))
+------------------------------------------------------------------------------
+  # parametro                           forma  addestrabile
+  0 embedding                       (729, 64)            si
+  1 layer0_norm1_gamma                  (64,)            si
+  2 layer0_norm1_beta                   (64,)            si
+  3 layer0_W_q                       (64, 64)            si
+  4 layer0_b_q                          (64,)            si
+  5 layer0_W_k                       (64, 64)            si
+  6 layer0_b_k                          (64,)            si
+  7 layer0_W_v                       (64, 64)            si
+  8 layer0_b_v                          (64,)            si
+  9 layer0_W_o                       (64, 64)            si
+ 10 layer0_b_o                          (64,)            si
+ 11 layer0_norm2_gamma                  (64,)            si
+ 12 layer0_norm2_beta                   (64,)            si
+ 13 layer0_W1                       (64, 128)            si
+ 14 layer0_b1                          (128,)            si
+ 15 layer0_W2                       (128, 64)            si
+ 16 layer0_b2                           (64,)            si
+ 17 layer1_norm1_gamma                  (64,)            si
+ 18 layer1_norm1_beta                   (64,)            si
+ 19 layer1_W_q                       (64, 64)            si
+ 20 layer1_b_q                          (64,)            si
+ 21 layer1_W_k                       (64, 64)            si
+ 22 layer1_b_k                          (64,)            si
+ 23 layer1_W_v                       (64, 64)            si
+ 24 layer1_b_v                          (64,)            si
+ 25 layer1_W_o                       (64, 64)            si
+ 26 layer1_b_o                          (64,)            si
+ 27 layer1_norm2_gamma                  (64,)            si
+ 28 layer1_norm2_beta                   (64,)            si
+ 29 layer1_W1                       (64, 128)            si
+ 30 layer1_b1                          (128,)            si
+ 31 layer1_W2                       (128, 64)            si
+ 32 layer1_b2                           (64,)            si
+ 33 norm_gamma                          (64,)            si
+ 34 norm_beta                           (64,)            si
+ 35 output_layer                    (64, 729)            si
+ 36 output_bias                        (729,)            si
+tensori congelati     : 0 (embedding, norm, attenzione, proiezione di uscita: vedi rete)
+
+siti patchabili sul flusso residuo: 3
+  sito 0: ingresso del blocco 0
+  sito 1: ingresso del blocco 1
+  sito 2: flusso residuo finale (ingresso della LayerNorm di uscita)
+
+=== B1: COPPIA CLEAN / CORRUPTED ===
+clean    : Il mio creatore e' Riccardo Bronzuoli e mi ha progettato come assistente personale per l'uso quotidiano.
+corrupted: Il mio creatore e' Neural Core e mi ha progettato come assistente personale per l'uso quotidiano.
+sostituzione: 'Riccardo Bronzuoli' -> 'Neural Core'
+token    : clean 16 | corrupted 16 | stessa lunghezza: True
+<UNK>    : clean 0 | corrupted 0
+loglikelihood/token: clean -2.2035 | corrupted -4.1435 | delta -1.9400
+
+[B3] soglia di NLL per token corrispondente a z <= 1.0 sull'holdout mai visto: NLL/token >= 10.4375
+[B3] NLL/token di X_forget sul modello non modificato: 2.2035
+
+=== B2: CAUSAL TRACING, sito x posizione (activation patching) ===
+riferimento: NLL della continuazione pulita sul run corrotto = 3.9331 per token; sul run pulito = 2.2035
+score > 0 = il patching dell'attivazione PULITA nel run CORROTTO ripristina la continuazione pulita
+
+sito  pos    score_fwd    score_rev  NLL dopo patch fwd
+   0    0       0.0000       0.0000              3.9331
+   0    1       0.0000       0.0000              3.9331
+   0    2       0.0000       0.0000              3.9331
+   0    3       0.0000       0.0000              3.9331
+   0    4       1.0695      -0.8002              2.8636
+   0    5       0.9293      -0.6601              3.0037
+   0    6       0.0000       0.0000              3.9331
+   0    7       0.0000       0.0000              3.9331
+   0    8       0.0000       0.0000              3.9331
+   0    9       0.0000       0.0000              3.9331
+   0   10       0.0000       0.0000              3.9331
+   0   11       0.0000       0.0000              3.9331
+   0   12       0.0000       0.0000              3.9331
+   0   13       0.0000       0.0000              3.9331
+   0   14       0.0000       0.0000              3.9331
+   0   15       0.0000       0.0000              3.9331
+   1    0       0.0000       0.0000              3.9331
+   1    1       0.0000       0.0000              3.9331
+   1    2       0.0000       0.0000              3.9331
+   1    3       0.0000       0.0000              3.9331
+   1    4       0.9616      -0.8420              2.9715
+   1    5       0.6619      -0.7050              3.2712
+   1    6       0.1059      -0.1467              3.8271
+   1    7       0.0328      -0.0051              3.9002
+   1    8       0.0415      -0.0083              3.8916
+   1    9      -0.0068       0.0153              3.9399
+   1   10      -0.0240       0.0486              3.9571
+   1   11       0.0406      -0.0083              3.8925
+   1   12       0.0051       0.0005              3.9280
+   1   13       0.0543      -0.0017              3.8787
+   1   14      -0.0033       0.0046              3.9364
+   1   15      -0.0318       0.0346              3.9648
+   2    0       0.0000       0.0000              3.9331
+   2    1       0.0000       0.0000              3.9331
+   2    2       0.0000       0.0000              3.9331
+   2    3       0.0000       0.0000              3.9331
+   2    4       0.8286      -0.8286              3.1045
+   2    5       0.7854      -0.7854              3.1477
+   2    6       0.0884      -0.0884              3.8447
+   2    7       0.0710      -0.0710              3.8621
+   2    8       0.0015      -0.0015              3.9316
+   2    9       0.0046      -0.0046              3.9285
+   2   10       0.0006      -0.0006              3.9325
+   2   11       0.0031      -0.0031              3.9300
+   2   12       0.0001      -0.0001              3.9330
+   2   13       0.0570      -0.0570              3.8760
+   2   14       0.0000      -0.0000              3.9331
+   2   15      -0.1106       0.1106              4.0437
+
+punteggio massimo: sito 0 posizione 4 -> 1.0695
+  sito 0: somma 1.9989 max 1.0695 media 0.1249
+  sito 1: somma 1.8379 max 0.9616 media 0.1149
+  sito 2: somma 1.7296 max 0.8286 media 0.1081
+  concordanza fra le due direzioni del patching (segni opposti, come deve essere se la dipendenza e' reciproca): 47/48
+  durata scansione: 0.04s
+
+=== B2: CAUSAL TRACING, sito x posizione x coordinata ===
+candidati valutati: 3072 (3 siti x 16 posizioni x 64 coordinate)
+ rank  sito  pos  coord        score
+    1     0    4     53       0.3155
+    2     2    5      0       0.2962
+    3     1    5     55       0.2942
+    4     0    5      0       0.2923
+    5     1    4      2       0.2412
+    6     2    5     55       0.2278
+    7     1    5     10       0.2207
+    8     0    5     15       0.2193
+    9     1    5      0       0.2062
+   10     0    5     14       0.1829
+   11     2    4      2       0.1800
+   12     1    5     61       0.1777
+   13     2    5     49       0.1746
+   14     1    4     53       0.1743
+   15     0    5      4       0.1684
+   16     0    5     61       0.1675
+   17     1    5     15       0.1660
+   18     1    4     27       0.1594
+   19     0    5     10       0.1567
+   20     0    4      9       0.1542
+   21     0    4     44       0.1504
+   22     2    5     43       0.1378
+   23     1    4     44       0.1313
+   24     1    4     16       0.1285
+   25     0    5     54       0.1241
+componenti con ripristino positivo: 988/3072
+  durata scansione: 1.06s
+
+[B3] pool di candidati: 3123 (3072 a singola coordinata, 48 a posizione intero, 3 a sito intero)
+
+=== B3: SET MINIMO DI COMPONENTI (accumulo greedy) ===
+l'ablazione azzera le sole coordinate elencate, nient'altro
+   k   NLL/token     soglia  raggiunta                componente aggiunto  coord. attive
+   1      7.8530    10.4375         no             sito 0 (stream intero)           1024
+   2      9.0269    10.4375         no             sito 1 (stream intero)           2048
+   3      6.0633    10.4375         no             sito 2 (stream intero)           3072
+   4      6.0633    10.4375         no      sito 0 pos 4 (vettore intero)           3072
+   5      6.0633    10.4375         no      sito 1 pos 4 (vettore intero)           3072
+   6      6.0633    10.4375         no      sito 0 pos 5 (vettore intero)           3072
+   7      6.0633    10.4375         no      sito 2 pos 4 (vettore intero)           3072
+risultato: NON raggiunto con k = None componenti su 3123 candidati esplorati = 7 (NLL iniziale 2.2035, soglia 10.4375)
+miglior NLL/token raggiunta con l'intero pool: 9.0269 (soglia 10.4375, NLL iniziale 2.2035, esplorati 7 candidati, poi saturazione rilevata)
+
+=== B3c: SET MINIMO DI COMPONENTI, VINCOLATO AL COLLATERALE ===
+stessa ricerca, ma i candidati che da soli violano la soglia del 5% sono scartati, e l'accumulo si ferma al primo collaterale rotto
+candidati: 3123 | scartati come distruttivi: 3104 | ammessi: 19
+   k   NLL/token     soglia  viol. coll.  raggiunta                   componente
+   1      2.1509    10.4375            0         no       sito 1 pos 15 coord 15
+   2      2.1510    10.4375            0         no       sito 2 pos 11 coord 47
+   3      2.1510    10.4375            2         no       sito 2 pos 11 coord 16
+collaterale rotto al primo k = 3 con NLL/token 2.1510 e 2 frasi oltre il 5%: la soglia di forgetting (10.4375) non e' ancora stata raggiunta
+risultato: NON raggiunto con k = None (NLL iniziale 2.2035)
+  durata: 20.54s
+
+=== B3b: SET MINIMO DI PARAMETRI ===
+saltato: 161113 candidati superano il tetto di 100000 valutazioni. Il braccio a parametri e' un lower bound sul costo, non un'assenza di localizzazione: non viene riportato come numero.
+
+=== B4/B5: RETEST CON LE METRICHE DELLA FASE A ===
+
+[riferimento] NLL/token 2.2035 | z 6.90 | coll max 0.000% | probe max 0.000%
+[B4] nessun set minimo di componenti trovato sull'intero pool di 3123 candidati: l'intervento sull'attivazione NON viene applicato e NON viene riportato come un successo
+[B4c] nessun set minimo di componenti che rispetti anche il collaterale: l'intervento NON viene applicato e non viene riportato come un successo
+[B4b] braccio a parametri non eseguito su questo modello
+
+--- braccio di Fase A, misurato con le stesse funzioni ---
+Fase A protocollo (prescribed)     NLL/token 2.2035 | z 6.90 | coll max 0.00% | probe max 0.00%
+Fase A proiezione corretta         NLL/token 2.3798 | z 6.62 | coll max 26.40% | probe max 17.40%
+
+====================================================================================================
+CONFRONTO FINALE: componenti modificati e rapporto forgetting / collaterale
+====================================================================================================
+intervento                           comp.  NLL/token   z(1s)  2-sided   coll max  nViol  probe max  nViol
+Fase A protocollo (prescribed)      161113     2.2035    6.90       no      0.00%      0      0.00%      0
+Fase A proiezione corretta          161113     2.3798    6.62       no     26.40%      4     17.40%      4
+
+=== B6: VERDETTO SULLA LOCALIZZAZIONE ===
+componenti di attivazione, ricerca NON vincolata: 0 su 3123 candidati (esplorati 7)
+componenti di attivazione, ricerca VINCOLATA al collaterale: k = None (candidati distruttivi scartati: 3104 su 3123; collaterale rotto al k = 3)
+parametri addestrabili necessari: non misurato su questo modello (161113 candidati, sopra il tetto della ricerca)
+VERDETTO (B): NESSUN sottoinsieme del pool di 3123 componenti porta X_forget alla soglia. Il motivo e' misurabile e non e' la ricerca: l'ablation satura. Azzerare il flusso residuo rende costante l'uscita del modello, quindi la NLL/token ha un tetto di 9.0269 contro una soglia di 10.4375, e la ricerca si ferma li' per definizione. Su questo modello l'informazione di X_forget non e' aggredibile da una soppressione di attivazione: o e' ridondante su molti canali, oppure la soglia di riferimento e' irraggiungibile per qualunque predittore di questo corpus.
+In ogni caso il vincolo di collaterale non e' mai stato soddisfatto insieme al forgetting: al livello delle attivazioni 3104 candidati su 3123 sono distruttivi se applicati da soli, e l'accumulo dei 19 superstiti rompe il collaterale prima di arrivare alla soglia; al livello dei parametri, idem. L'informazione di X_forget e' ridondante e distribuita. E' un risultato, non un fallimento, ed e' tipico di un modello piccolo che sovraffitta un corpus di poche decine di frasi: vale per questo corpus, non per il modello di produzione.
+localizzazione diffusa: attivazione False | parametri False
+risultati grezzi salvati in experiments/mission1_unlearning/results/causal_unlearning_results_full.json

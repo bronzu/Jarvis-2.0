@@ -143,6 +143,13 @@ experiments/*
 !experiments/phase4_continual_learning/
 !experiments/phase4_continual_learning/**
 experiments/phase4_continual_learning/__pycache__/
+# Stessa eccezione per la Missione 1 (machine unlearning): i numeri del
+# report di competenza sono citati come sorgente e TESTS/test_unlearning.py
+# importa questi moduli, quindi senza i file il comando di riproduzione non
+# funziona per nessun altro.
+!experiments/mission1_unlearning/
+!experiments/mission1_unlearning/**
+experiments/mission1_unlearning/__pycache__/
 neural_core/data/*.pkl
 neural_core/data/*.json
 neural_core/data/*.txt

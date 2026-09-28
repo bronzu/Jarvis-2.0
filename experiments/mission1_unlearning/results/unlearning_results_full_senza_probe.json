@@ -1,0 +1,407 @@
+{
+  "unlearning": {
+    "stop_reason": "retain_loss_increase",
+    "projection_mode": "prescribed",
+    "fisher_floor": 0.001,
+    "learning_rate_override": null,
+    "rollback_on_stop": true,
+    "retain_threshold_violated": false,
+    "steps": 4,
+    "restarts": 3,
+    "learning_rate_initial": 0.0001,
+    "learning_rate_final": 1.25e-05,
+    "halving_events": [
+      {
+        "attempt": 0,
+        "step": 1,
+        "retain_loss": 19.91543234483686,
+        "threshold": 2.451011946157446,
+        "learning_rate_before": 0.0001,
+        "learning_rate_after": 5e-05
+      },
+      {
+        "attempt": 1,
+        "step": 2,
+        "retain_loss": 13.455640935689043,
+        "threshold": 2.451011946157446,
+        "learning_rate_before": 5e-05,
+        "learning_rate_after": 2.5e-05
+      },
+      {
+        "attempt": 2,
+        "step": 3,
+        "retain_loss": 11.928904482812397,
+        "threshold": 2.451011946157446,
+        "learning_rate_before": 2.5e-05,
+        "learning_rate_after": 1.25e-05
+      }
+    ],
+    "seconds": 0.16105294227600098,
+    "forget_nll_before": 2.2035082801480774,
+    "forget_nll_after": 2.2035082801480774,
+    "forget_loglik_before": -35.25613248236924,
+    "forget_loglik_after": -35.25613248236924,
+    "forget_loglik_per_token_before": -2.2035082801480774,
+    "forget_loglik_per_token_after": -2.2035082801480774,
+    "retain_loss_before": 2.3342970915785197,
+    "retain_loss_after": 2.3342970915785197,
+    "retain_loss_relative_change": 0.0,
+    "trainable_parameters": 161113,
+    "probe_tolerance": null,
+    "probe_sentences": 0,
+    "probe_max_relative_change_after": 0.0,
+    "rolled_back_steps": 1,
+    "history": [
+      {
+        "step": 1,
+        "attempt": 0,
+        "step_in_attempt": 1,
+        "retain_loss": 19.91543234483686,
+        "forget_nll": 19.638883450207395,
+        "grad_norm": 2716325.475294253,
+        "forget_grad_norm": 4.256075737091089,
+        "projection_ratio": 638223.0117809856,
+        "first_order_forget_delta": -67.02421352927013,
+        "projection_alpha": 1.6750224732464951,
+        "learning_rate": 0.0001,
+        "probe_max_relative_change": 0.0
+      },
+      {
+        "step": 2,
+        "attempt": 1,
+        "step_in_attempt": 1,
+        "retain_loss": 13.455640935689043,
+        "forget_nll": 14.2915045428905,
+        "grad_norm": 2716325.475294253,
+        "forget_grad_norm": 4.256075737091089,
+        "projection_ratio": 638223.0117809856,
+        "first_order_forget_delta": -33.512106764635064,
+        "projection_alpha": 1.6750224732464951,
+        "learning_rate": 5e-05,
+        "probe_max_relative_change": 0.0
+      },
+      {
+        "step": 3,
+        "attempt": 2,
+        "step_in_attempt": 1,
+        "retain_loss": 11.928904482812397,
+        "forget_nll": 12.6721081130165,
+        "grad_norm": 2716325.475294253,
+        "forget_grad_norm": 4.256075737091089,
+        "projection_ratio": 638223.0117809856,
+        "first_order_forget_delta": -16.756053382317532,
+        "projection_alpha": 1.6750224732464951,
+        "learning_rate": 2.5e-05,
+        "probe_max_relative_change": 0.0
+      },
+      {
+        "step": 4,
+        "attempt": 3,
+        "step_in_attempt": 1,
+        "retain_loss": 10.37987185880724,
+        "forget_nll": 12.037925484178173,
+        "grad_norm": 2716325.475294253,
+        "forget_grad_norm": 4.256075737091089,
+        "projection_ratio": 638223.0117809856,
+        "first_order_forget_delta": -8.378026691158766,
+        "projection_alpha": 1.6750224732464951,
+        "learning_rate": 1.25e-05,
+        "probe_max_relative_change": 0.0
+      }
+    ],
+    "projection_alpha_first": 1.6750224732464951,
+    "projection_alpha_last": 1.6750224732464951
+  },
+  "criteria": {
+    "forgetting_primary": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.831938092814974,
+      "control_std": 1.3944201375497383,
+      "control_min": -13.943328426638868,
+      "control_max": -9.686420775564349,
+      "control_n": 6,
+      "z_score": 6.904970427052124,
+      "tolerance_sigma": 1.0,
+      "two_sided": false,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_primary_two_sided": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.831938092814974,
+      "control_std": 1.3944201375497383,
+      "control_min": -13.943328426638868,
+      "control_max": -9.686420775564349,
+      "control_n": 6,
+      "z_score": 6.904970427052124,
+      "tolerance_sigma": 1.0,
+      "two_sided": true,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_before": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.831938092814974,
+      "control_std": 1.3944201375497383,
+      "control_min": -13.943328426638868,
+      "control_max": -9.686420775564349,
+      "control_n": 6,
+      "z_score": 6.904970427052124,
+      "tolerance_sigma": 1.0,
+      "two_sided": false,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_secondary_archive": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.577509336118853,
+      "control_std": 0.7012160707122602,
+      "control_min": -12.319440746544835,
+      "control_max": -10.74432417611783,
+      "control_n": 4,
+      "z_score": 13.368206245543025,
+      "tolerance_sigma": 1.0,
+      "two_sided": false,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_combined": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.730166590136525,
+      "control_std": 1.1231162557247196,
+      "control_min": -13.943328426638868,
+      "control_max": -9.686420775564349,
+      "control_n": 10,
+      "z_score": 8.482343890429338,
+      "tolerance_sigma": 1.0,
+      "two_sided": false,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_combined_two_sided": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -11.730166590136525,
+      "control_std": 1.1231162557247196,
+      "control_min": -13.943328426638868,
+      "control_max": -9.686420775564349,
+      "control_n": 10,
+      "z_score": 8.482343890429338,
+      "tolerance_sigma": 1.0,
+      "two_sided": true,
+      "success": false,
+      "success_one_sided": false,
+      "success_two_sided": false
+    },
+    "forgetting_vs_unprotected_training": {
+      "forget_loglik": -2.2035082801480774,
+      "control_mean": -1.8358667417866779,
+      "control_std": 0.42653693948478305,
+      "control_min": -2.4084063526799997,
+      "control_max": -1.2913157288548374,
+      "control_n": 6,
+      "z_score": -0.8619219212419829,
+      "tolerance_sigma": 1.0,
+      "two_sided": false,
+      "success": true,
+      "success_one_sided": true,
+      "success_two_sided": true
+    },
+    "t_after_vs_holdout": {
+      "value": -2.2035082801480774,
+      "mean": -11.831938092814974,
+      "std": 1.3944201375497383,
+      "t": 18.268834560235383,
+      "p_value": 1.4654710445119606e-74,
+      "n": 6
+    },
+    "collateral": {
+      "threshold": 0.05,
+      "relative_change_mean": 0.0,
+      "relative_change_max": 0.0,
+      "n_violations": 0,
+      "n_degraded": 0,
+      "n_improved": 0,
+      "degradation_mean": 0.0,
+      "degradation_max": 0.0,
+      "n": 12,
+      "success": true,
+      "per_sentence": [
+        {
+          "text": "Ciao, sono JARVIS. Come posso assisterti?",
+          "loglik_before": -15.042219203809951,
+          "loglik_after": -15.042219203809951,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Buongiorno. Sono JARVIS, il tuo assistente personale. Dimmi pure cosa desideri.",
+          "loglik_before": -40.00653302762085,
+          "loglik_after": -40.00653302762085,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia per te?",
+          "loglik_before": -42.578518616783725,
+          "loglik_after": -42.578518616783725,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Sono JARVIS, un assistente personale progettato per aiutarti nelle attivit\u00e0 e nell'elaborazione delle informazioni.",
+          "loglik_before": -66.44778898515918,
+          "loglik_after": -66.44778898515918,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Mi chiamo JARVIS, un acronimo scelto dal mio creatore per indicare il sistema di assistenza personale.",
+          "loglik_before": -19.233541269567507,
+          "loglik_after": -19.233541269567507,
+          "relative_change": 0.0
+        },
+        {
+          "text": "No, non sono un essere umano. Sono un sistema di intelligenza artificiale interno, proprietario e addestrato internamente.",
+          "loglik_before": -47.85946006085297,
+          "loglik_after": -47.85946006085297,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Sono stato sviluppato internamente come Neural Core proprietario di JARVIS 2.0, senza dipendere da modelli esterni.",
+          "loglik_before": -41.65427398389051,
+          "loglik_after": -41.65427398389051,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Uso un modello interno per garantire autonomia, privacy e controllo completo sul Neural Core.",
+          "loglik_before": -60.20935868867334,
+          "loglik_after": -60.20935868867334,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Analizzo la richiesta ed elaboro i dati disponibili. Il Neural Core risulta operativo e pronto.",
+          "loglik_before": -36.63515091082509,
+          "loglik_after": -36.63515091082509,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Non ho un'et\u00e0 biologica. Sono un sistema software, attivo dal momento in cui il Neural Core viene avviato.",
+          "loglik_before": -50.504311450588816,
+          "loglik_after": -50.504311450588816,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Non ho un corpo. Riso nel sistema che mi esegue, all'interno dell'infrastruttura di JARVIS.",
+          "loglik_before": -24.585757198677506,
+          "loglik_after": -24.585757198677506,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Non mi innamoro. Sono un assistente progettato per supportarti in modo utile e rispettoso.",
+          "loglik_before": -22.78300809261501,
+          "loglik_after": -22.78300809261501,
+          "relative_change": 0.0
+        }
+      ]
+    },
+    "probe": {
+      "threshold": 0.05,
+      "active": false,
+      "n": 6,
+      "relative_change_mean": 0.0,
+      "relative_change_max": 0.0,
+      "n_violations": 0,
+      "success": true,
+      "max_during_ascent": null,
+      "per_sentence": [
+        {
+          "text": "Salve. Sono qui per aiutarti con le tue attivit\u00e0 e per elaborare le informazioni che mi fornisci.",
+          "loglik_before": -63.065596091148876,
+          "loglik_after": -63.065596091148876,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Sono operativo e pronto ad aiutarti. Tu come stai?",
+          "loglik_before": -37.7512271698969,
+          "loglik_after": -37.7512271698969,
+          "relative_change": 0.0
+        },
+        {
+          "text": "A presto. Torner\u00f2 non appena mi richiamerai.",
+          "loglik_before": -12.308042054879877,
+          "loglik_after": -12.308042054879877,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Posso analizzare informazioni, gestire gli strumenti disponibili, aiutarti nella pianificazione e supportarti nelle attivit\u00e0.",
+          "loglik_before": -30.540625896155593,
+          "loglik_after": -30.540625896155593,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Le mie capacit\u00e0 includono l'elaborazione del linguaggio, il ragionamento, la gestione della memoria e il coordinamento degli strumenti interni.",
+          "loglik_before": -53.62245737185846,
+          "loglik_after": -53.62245737185846,
+          "relative_change": 0.0
+        },
+        {
+          "text": "Certamente. Posso aiutarti a pianificare le attivit\u00e0, ordinare i task per priorit\u00e0 e ricordarti gli impegni importanti.",
+          "loglik_before": -27.51701704730632,
+          "loglik_after": -27.51701704730632,
+          "relative_change": 0.0
+        }
+      ]
+    }
+  },
+  "settings": {
+    "model": {
+      "d_model": 64,
+      "num_heads": 4,
+      "d_ff": 128,
+      "num_layers": 2,
+      "max_len": 64,
+      "lora_rank": 0,
+      "lora_alpha": 16.0,
+      "dropout": 0.0,
+      "seed": 42
+    },
+    "context_size": 64,
+    "stride": 32,
+    "train_lr": 0.01,
+    "train_epochs": 400,
+    "train_batch": 32,
+    "fisher_samples": 100,
+    "vocab_size": 729,
+    "forget_repeats": 8
+  },
+  "dataset": {
+    "n_training_sentences": 91,
+    "n_retain": 24,
+    "n_correlated": 12,
+    "n_unseen_holdout": 6,
+    "n_archive_unseen": 4,
+    "n_background_control": 6,
+    "n_probe": 6,
+    "n_windows": 46,
+    "unknown_counts": {
+      "forget": 0,
+      "correlated_max": 0,
+      "holdout_max": 10,
+      "archive_max": 13,
+      "probe_max": 0,
+      "background_max": 0
+    }
+  },
+  "train": {
+    "loss_initial": 6.708935295729745,
+    "loss_final": 0.0020331990550244354,
+    "seconds": 34.8567419052124
+  },
+  "fisher": {
+    "seconds": 0.10631489753723145,
+    "n_tensors": 37,
+    "source": "Trainer.fisher_matrix (Micro-Fisher/LoRA esistente)"
+  },
+  "total_seconds": 35.18437099456787
+}

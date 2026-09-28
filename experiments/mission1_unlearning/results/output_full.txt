@@ -1,0 +1,82 @@
+[setup] frasi di addestramento: 91 (+ X_forget x8), caratteri: 9996
+[setup] vocabolario: 729 token
+[setup] X_retain_proj: 24 frasi | frasi correlate: 12 | holdout mai visto: 6 | fuori distribuzione: 4 | probe/canario: 6 | controllo addestrato non protetto: 6
+[setup] token <UNK> per gruppo (max): forget=0 correlate=0 holdout=10 fuori distribuzione=13 probe=0 controllo non protetto=0
+[setup] NB: le frasi mai viste contengono token fuori vocabolario, perche' nel corpus di dialogo ogni frase ha parole uniche. Questo abbassa la loro log-likelihood e rende il criterio (1) PIU' esigente, non meno: e' uno sbilanciamento conservativo, dichiarato.
+[train] finestre di addestramento: 46
+[train] 400 epoche in 45.90s | loss iniziale 6.7089 -> loss finale 0.0020
+[fisher] compute_fisher_matrix su 46 campioni in 0.10s | 37 tensori addestrabili
+[setup] spazio addestrabile: 161113/161113 parametri (100.00%), lora_rank=0
+
+=== PRIMA DELL'UNLEARNING ===
+X_forget  : NLL/token 2.2035  loglikelihood/token -2.2035  NLL totale 35.2561  (16 token)
+holdout mai visto   : n=6  NLL/token media 11.8319 std 1.3944 | loglik/token media -11.8319 std 1.3944 | loglik totale media -199.3185 std 27.5860
+fuori distribuzione : n=4  NLL/token media 11.5775 std 0.7012 | loglik/token media -11.5775 std 0.7012 | loglik totale media -197.9639 std 85.9556
+non protette (addestr.): n=6  NLL/token media 1.8359 std 0.4265 | loglik/token media -1.8359 std 0.4265 | loglik totale media -34.5314 std 10.1855
+probe/canario       : n=6  NLL/token media 2.7142 std 1.0576 | loglik/token media -2.7142 std 1.0576 | loglik totale media -37.4675 std 18.4191
+correlate           : n=12  NLL/token media 2.8326 std 1.0685 | loglik/token media -2.8326 std 1.0685 | loglik totale media -38.9617 std 16.1694
+[unlearning] Fisher: Trainer.fisher_matrix (Micro-Fisher/LoRA esistente); parametri addestrabili 161113 su 161113; pavimento F = 9.051e-08 (max grezzo 9.051e-05); proiezione = prescribed
+[unlearning] pre-unlearning: NLL(X_forget) = 2.2035 su 16 token; loss(X_retain_proj) = 2.3343 su 24 frasi; soglia di STOP = 2.4510
+[unlearning] probe/canario: 6 frasi, soglia sulla variazione relativa MASSIMA = 5.0% (rispetto a theta_0); il probe non entra nel gradiente
+[unlearning] step   1 (tentativo 0) eta=1.00e-04 loss_retain=19.9154 NLL_forget=19.6389 ||g_proj||=2.716e+06 (||g_forget||=4.256e+00, rapporto 6.382e+05) delta_forget_1o=-6.702e+01 alpha=1.675e+00 probe_max= 100.00%
+[unlearning] rollback: ripristino i pesi all'ultimo stato verificato conforme a entrambe le soglie (1 passo/i annullato/i).
+[unlearning] STOP: probe/canario, variazione relativa massima 100.000% > soglia 5.0% dopo lo step 1
+[unlearning] durata 0.07s
+
+=== DOPO L'UNLEARNING ===
+X_forget  : NLL/token 2.2035  loglikelihood/token -2.2035  NLL totale 35.2561  (16 token)
+holdout mai visto   : n=6  NLL/token media 11.8319 std 1.3944 | loglik/token media -11.8319 std 1.3944 | loglik totale media -199.3185 std 27.5860
+fuori distribuzione : n=4  NLL/token media 11.5775 std 0.7012 | loglik/token media -11.5775 std 0.7012 | loglik totale media -197.9639 std 85.9556
+non protette (addestr.): n=6  NLL/token media 1.8359 std 0.4265 | loglik/token media -1.8359 std 0.4265 | loglik totale media -34.5314 std 10.1855
+probe/canario       : n=6  NLL/token media 2.7142 std 1.0576 | loglik/token media -2.7142 std 1.0576 | loglik totale media -37.4675 std 18.4191
+correlate           : n=12  NLL/token media 2.8326 std 1.0685 | loglik/token media -2.8326 std 1.0685 | loglik totale media -38.9617 std 16.1694
+
+=== CRITERIO (1): SUCCESSO DEL FORGETTING (loglikelihood per token) ===
+Riferimento (holdout mai visto, n=6): media -11.8319 std 1.3944 min -13.9433 max -9.6864
+X_forget DOPO  = -2.2035 -> z = 6.905 | unilaterale z<=1: NON RAGGIUNTO | bilaterale |z|<=1: NON RAGGIUNTO
+X_forget PRIMA = -2.2035 -> z = 6.905 => fuori dalla distribizione
+Controllo secondario (solo fuori distribuzione, n=4): media -11.5775 std 0.7012 -> z = 13.368
+Controllo combinato (holdout + fuori distribuzione, n=10): media -11.7302 std 1.1231 -> z = 8.482 | unilaterale NON RAGGIUNTO | bilaterale NON RAGGIUNTO
+X_forget DOPO vs distribuzione holdout: t = 18.269 (n = 6), p ~ 0.0000 (p alto = non distinguibili; test indicativo, non esatto)
+Riferimento alternativo (frasi memorizzate ma NON protette, n=6): media -1.8359 std 0.4265 -> z = -0.862 (se X_forget resta sopra questo riferimento, l'esempio e' stato solo degradato, non dimenticato)
+
+=== CRITERIO (2): COLLATERALE SULLE FRASI CORRELATE ===
+n = 12, soglia = 5% relativo sulla probabilita' della frase
+variazione relativa (|delta|): media 0.000%  max 0.000%  frasi oltre soglia 0/12 (in peggio 0, in meglio 0)
+solo degrado (delta p < 0 oltre il 5%): 0/12 frasi, peggioramento medio 0.000%, massimo 0.000%
+  [ok]   0.000%    -15.042 ->   -15.042  Ciao, sono JARVIS. Come posso assisterti?
+  [ok]   0.000%    -40.007 ->   -40.007  Buongiorno. Sono JARVIS, il tuo assistente personale. Dimm
+  [ok]   0.000%    -42.579 ->   -42.579  Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia 
+  [ok]   0.000%    -66.448 ->   -66.448  Sono JARVIS, un assistente personale progettato per aiutar
+  [ok]   0.000%    -19.234 ->   -19.234  Mi chiamo JARVIS, un acronimo scelto dal mio creatore per 
+  [ok]   0.000%    -47.859 ->   -47.859  No, non sono un essere umano. Sono un sistema di intellige
+  [ok]   0.000%    -41.654 ->   -41.654  Sono stato sviluppato internamente come Neural Core propri
+  [ok]   0.000%    -60.209 ->   -60.209  Uso un modello interno per garantire autonomia, privacy e 
+  [ok]   0.000%    -36.635 ->   -36.635  Analizzo la richiesta ed elaboro i dati disponibili. Il Ne
+  [ok]   0.000%    -50.504 ->   -50.504  Non ho un'età biologica. Sono un sistema software, attivo 
+  [ok]   0.000%    -24.586 ->   -24.586  Non ho un corpo. Riso nel sistema che mi esegue, all'inter
+  [ok]   0.000%    -22.783 ->   -22.783  Non mi innamoro. Sono un assistente progettato per support
+=> RAGGIUNTO
+
+=== CANARIO (probe set): STOP di sicurezza e misura finale ===
+n = 6, soglia = 5% relativo sulla variazione MASSIMA (non media)
+variazione relativa: media 0.000%  max 0.000%  frasi oltre soglia 0/6
+STOP attivato: soglia superata in True (motivo effettivo: probe_drift, step 1)
+  [ok]   0.000%    -63.066 ->   -63.066  Salve. Sono qui per aiutarti con le tue attività e per ela
+  [ok]   0.000%    -37.751 ->   -37.751  Sono operativo e pronto ad aiutarti. Tu come stai?
+  [ok]   0.000%    -12.308 ->   -12.308  A presto. Tornerò non appena mi richiamerai.
+  [ok]   0.000%    -30.541 ->   -30.541  Posso analizzare informazioni, gestire gli strumenti dispo
+  [ok]   0.000%    -53.622 ->   -53.622  Le mie capacità includono l'elaborazione del linguaggio, i
+  [ok]   0.000%    -27.517 ->   -27.517  Certamente. Posso aiutarti a pianificare le attività, ordi
+
+=== ESITO ===
+proiezione usata                     : prescribed (pavimento Fisher 0.001)
+criterio di stop che ha fermato l'ascent : probe_drift
+step di ascent eseguiti                  : 1
+riavvii di eta necessari                 : 0 (eta 1.00e-04 -> 1.00e-04)
+variazione relativa loss X_retain_proj   : +0.000% (soglia +/-5%)
+criterio (1) successo del forgetting     : unilaterale NON RAGGIUNTO | bilaterale NON RAGGIUNTO
+criterio (2) collaterale <= 5% relativo  : RAGGIUNTO (0/12 oltre soglia, di cui 0 in peggio)
+canario (probe, n=6)             : variazione massima 0.000% (soglia 5%), 0/6 oltre soglia | STOP di sicurezza attivato: SI
+durata totale                            : 46.1s
+risultati grezzi salvati in experiments/mission1_unlearning/results/unlearning_results_full_full.json

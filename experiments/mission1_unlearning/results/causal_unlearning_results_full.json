@@ -1,0 +1,1369 @@
+{
+  "b0_architecture": {
+    "config": {
+      "vocab_size": 729,
+      "d_model": 64,
+      "num_heads": 4,
+      "d_ff": 128,
+      "num_layers": 2,
+      "max_len": 64,
+      "dropout": 0.0,
+      "dtype": "float64",
+      "lora_rank": 0,
+      "lora_alpha": 16.0
+    },
+    "head_dim": 16,
+    "n_parameters_total": 161113,
+    "n_parameters_trainable": 161113,
+    "n_trainable_tensors": 37,
+    "trainable_names": [
+      "embedding",
+      "layer0_norm1_gamma",
+      "layer0_norm1_beta",
+      "layer0_W_q",
+      "layer0_b_q",
+      "layer0_W_k",
+      "layer0_b_k",
+      "layer0_W_v",
+      "layer0_b_v",
+      "layer0_W_o",
+      "layer0_b_o",
+      "layer0_norm2_gamma",
+      "layer0_norm2_beta",
+      "layer0_W1",
+      "layer0_b1",
+      "layer0_W2",
+      "layer0_b2",
+      "layer1_norm1_gamma",
+      "layer1_norm1_beta",
+      "layer1_W_q",
+      "layer1_b_q",
+      "layer1_W_k",
+      "layer1_b_k",
+      "layer1_W_v",
+      "layer1_b_v",
+      "layer1_W_o",
+      "layer1_b_o",
+      "layer1_norm2_gamma",
+      "layer1_norm2_beta",
+      "layer1_W1",
+      "layer1_b1",
+      "layer1_W2",
+      "layer1_b2",
+      "norm_gamma",
+      "norm_beta",
+      "output_layer",
+      "output_bias"
+    ],
+    "trainable_shapes": [
+      [
+        729,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        128
+      ],
+      [
+        128
+      ],
+      [
+        128,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        128
+      ],
+      [
+        128
+      ],
+      [
+        128,
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64
+      ],
+      [
+        64,
+        729
+      ],
+      [
+        729
+      ]
+    ],
+    "n_sites": 3,
+    "site_labels": [
+      "ingresso del blocco 0",
+      "ingresso del blocco 1",
+      "flusso residuo finale (ingresso della LayerNorm di uscita)"
+    ]
+  },
+  "b1_pair": {
+    "clean": "Il mio creatore e' Riccardo Bronzuoli e mi ha progettato come assistente personale per l'uso quotidiano.",
+    "corrupted": "Il mio creatore e' Neural Core e mi ha progettato come assistente personale per l'uso quotidiano.",
+    "n_tokens": 16,
+    "unk_clean": 0,
+    "unk_corrupted": 0,
+    "clean_loglik_per_token": -2.2035082801480774,
+    "corrupted_loglik_per_token": -4.143485763473967
+  },
+  "b2_site_scan": {
+    "nll_corrupted_run": 3.933072909120971,
+    "nll_clean_run": 2.2035082801480774,
+    "n_positions": 16,
+    "rows": [
+      {
+        "site": 0,
+        "position": 0,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 1,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 2,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 3,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 4,
+        "score_forward": 1.0695094329467194,
+        "score_reverse": -0.8002203073392451,
+        "nll_after_patch_forward": 2.8635634761742517,
+        "nll_after_patch_reverse": 3.0037285874873225
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "score_forward": 0.9293443216336486,
+        "score_reverse": -0.6600551960261742,
+        "nll_after_patch_forward": 3.0037285874873225,
+        "nll_after_patch_reverse": 2.8635634761742517
+      },
+      {
+        "site": 0,
+        "position": 6,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 7,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 8,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 9,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 10,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 11,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 12,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 13,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 14,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 0,
+        "position": 15,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 1,
+        "position": 0,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 1,
+        "position": 1,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 1,
+        "position": 2,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 1,
+        "position": 3,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "score_forward": 0.9615571930572901,
+        "score_reverse": -0.8419712808481674,
+        "nll_after_patch_forward": 2.971515716063681,
+        "nll_after_patch_reverse": 3.045479560996245
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "score_forward": 0.661912394694729,
+        "score_reverse": -0.705031097173979,
+        "nll_after_patch_forward": 3.271160514426242,
+        "nll_after_patch_reverse": 2.9085393773220565
+      },
+      {
+        "site": 1,
+        "position": 6,
+        "score_forward": 0.10594861234513386,
+        "score_reverse": -0.14667280983837294,
+        "nll_after_patch_forward": 3.827124296775837,
+        "nll_after_patch_reverse": 2.3501810899864504
+      },
+      {
+        "site": 1,
+        "position": 7,
+        "score_forward": 0.032834078413573664,
+        "score_reverse": -0.005142236005473588,
+        "nll_after_patch_forward": 3.9002388307073974,
+        "nll_after_patch_reverse": 2.208650516153551
+      },
+      {
+        "site": 1,
+        "position": 8,
+        "score_forward": 0.041493245106434706,
+        "score_reverse": -0.008330339908664719,
+        "nll_after_patch_forward": 3.8915796640145364,
+        "nll_after_patch_reverse": 2.211838620056742
+      },
+      {
+        "site": 1,
+        "position": 9,
+        "score_forward": -0.00681985461933321,
+        "score_reverse": 0.015325899611993599,
+        "nll_after_patch_forward": 3.9398927637403043,
+        "nll_after_patch_reverse": 2.188182380536084
+      },
+      {
+        "site": 1,
+        "position": 10,
+        "score_forward": -0.024028311169225436,
+        "score_reverse": 0.048621356823252526,
+        "nll_after_patch_forward": 3.9571012202901965,
+        "nll_after_patch_reverse": 2.154886923324825
+      },
+      {
+        "site": 1,
+        "position": 11,
+        "score_forward": 0.040610636558504165,
+        "score_reverse": -0.008318007261607363,
+        "nll_after_patch_forward": 3.892462272562467,
+        "nll_after_patch_reverse": 2.211826287409685
+      },
+      {
+        "site": 1,
+        "position": 12,
+        "score_forward": 0.005092565729759357,
+        "score_reverse": 0.000512202009935514,
+        "nll_after_patch_forward": 3.9279803433912117,
+        "nll_after_patch_reverse": 2.202996078138142
+      },
+      {
+        "site": 1,
+        "position": 13,
+        "score_forward": 0.054349367821622696,
+        "score_reverse": -0.0017483578871315686,
+        "nll_after_patch_forward": 3.8787235412993484,
+        "nll_after_patch_reverse": 2.205256638035209
+      },
+      {
+        "site": 1,
+        "position": 14,
+        "score_forward": -0.0033305536121197576,
+        "score_reverse": 0.0045842698235167845,
+        "nll_after_patch_forward": 3.936403462733091,
+        "nll_after_patch_reverse": 2.1989240103245606
+      },
+      {
+        "site": 1,
+        "position": 15,
+        "score_forward": -0.0317667266562065,
+        "score_reverse": 0.034561391477974546,
+        "nll_after_patch_forward": 3.9648396357771776,
+        "nll_after_patch_reverse": 2.168946888670103
+      },
+      {
+        "site": 2,
+        "position": 0,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 2,
+        "position": 1,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 2,
+        "position": 2,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 2,
+        "position": 3,
+        "score_forward": 0.0,
+        "score_reverse": 0.0,
+        "nll_after_patch_forward": 3.933072909120971,
+        "nll_after_patch_reverse": 2.2035082801480774
+      },
+      {
+        "site": 2,
+        "position": 4,
+        "score_forward": 0.8285915912228767,
+        "score_reverse": -0.8285915912228772,
+        "nll_after_patch_forward": 3.1044813178980943,
+        "nll_after_patch_reverse": 3.0320998713709546
+      },
+      {
+        "site": 2,
+        "position": 5,
+        "score_forward": 0.7853915874935842,
+        "score_reverse": -0.7853915874935846,
+        "nll_after_patch_forward": 3.147681321627387,
+        "nll_after_patch_reverse": 2.988899867641662
+      },
+      {
+        "site": 2,
+        "position": 6,
+        "score_forward": 0.08842285195793087,
+        "score_reverse": -0.08842285195793131,
+        "nll_after_patch_forward": 3.84465005716304,
+        "nll_after_patch_reverse": 2.2919311321060087
+      },
+      {
+        "site": 2,
+        "position": 7,
+        "score_forward": 0.07101193056691946,
+        "score_reverse": -0.0710119305669199,
+        "nll_after_patch_forward": 3.8620609785540516,
+        "nll_after_patch_reverse": 2.2745202107149973
+      },
+      {
+        "site": 2,
+        "position": 8,
+        "score_forward": 0.0014644849763820744,
+        "score_reverse": -0.0014644849763825185,
+        "nll_after_patch_forward": 3.931608424144589,
+        "nll_after_patch_reverse": 2.20497276512446
+      },
+      {
+        "site": 2,
+        "position": 9,
+        "score_forward": 0.004554595200685352,
+        "score_reverse": -0.004554595200685796,
+        "nll_after_patch_forward": 3.9285183139202857,
+        "nll_after_patch_reverse": 2.208062875348763
+      },
+      {
+        "site": 2,
+        "position": 10,
+        "score_forward": 0.0005713931078945578,
+        "score_reverse": -0.0005713931078950019,
+        "nll_after_patch_forward": 3.9325015160130765,
+        "nll_after_patch_reverse": 2.2040796732559724
+      },
+      {
+        "site": 2,
+        "position": 11,
+        "score_forward": 0.0030795610057285927,
+        "score_reverse": -0.0030795610057285927,
+        "nll_after_patch_forward": 3.9299933481152425,
+        "nll_after_patch_reverse": 2.206587841153806
+      },
+      {
+        "site": 2,
+        "position": 12,
+        "score_forward": 8.843521674117838e-05,
+        "score_reverse": -8.843521674162247e-05,
+        "nll_after_patch_forward": 3.93298447390423,
+        "nll_after_patch_reverse": 2.203596715364819
+      },
+      {
+        "site": 2,
+        "position": 13,
+        "score_forward": 0.057026465830011475,
+        "score_reverse": -0.057026465830011475,
+        "nll_after_patch_forward": 3.8760464432909596,
+        "nll_after_patch_reverse": 2.260534745978089
+      },
+      {
+        "site": 2,
+        "position": 14,
+        "score_forward": 1.0105905725588116e-06,
+        "score_reverse": -1.0105905730029008e-06,
+        "nll_after_patch_forward": 3.9330718985303985,
+        "nll_after_patch_reverse": 2.2035092907386504
+      },
+      {
+        "site": 2,
+        "position": 15,
+        "score_forward": -0.11063927819643604,
+        "score_reverse": 0.11063927819643471,
+        "nll_after_patch_forward": 4.043712187317407,
+        "nll_after_patch_reverse": 2.0928690019516427
+      }
+    ]
+  },
+  "b2_site_summary": {
+    "0": {
+      "sum": 1.998853754580368,
+      "max": 1.0695094329467194,
+      "mean": 0.124928359661273
+    },
+    "1": {
+      "sum": 1.8378526476701627,
+      "max": 0.9615571930572901,
+      "mean": 0.11486579047938517
+    },
+    "2": {
+      "sum": 1.729564628972891,
+      "max": 0.8285915912228767,
+      "mean": 0.10809778931080569
+    }
+  },
+  "b2_direction_agreement": 47,
+  "b2_coord_scan": {
+    "n_candidates": 3072,
+    "n_positive": 988,
+    "top25": [
+      {
+        "site": 0,
+        "position": 4,
+        "coord": 53,
+        "score": 0.31553646902822097
+      },
+      {
+        "site": 2,
+        "position": 5,
+        "coord": 0,
+        "score": 0.29622670163472264
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "coord": 55,
+        "score": 0.2941909601785895
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 0,
+        "score": 0.2923483546766765
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "coord": 2,
+        "score": 0.2412374002923201
+      },
+      {
+        "site": 2,
+        "position": 5,
+        "coord": 55,
+        "score": 0.22775406154630584
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "coord": 10,
+        "score": 0.22070947432807797
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 15,
+        "score": 0.21931476515643045
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "coord": 0,
+        "score": 0.20622881789740966
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 14,
+        "score": 0.18288100632592075
+      },
+      {
+        "site": 2,
+        "position": 4,
+        "coord": 2,
+        "score": 0.1800071373053358
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "coord": 61,
+        "score": 0.17772492299029885
+      },
+      {
+        "site": 2,
+        "position": 5,
+        "coord": 49,
+        "score": 0.17455746253210425
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "coord": 53,
+        "score": 0.17426001313289685
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 4,
+        "score": 0.16844098211541114
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 61,
+        "score": 0.16747969672081364
+      },
+      {
+        "site": 1,
+        "position": 5,
+        "coord": 15,
+        "score": 0.16600071938215466
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "coord": 27,
+        "score": 0.15940451191242122
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 10,
+        "score": 0.15665298831673136
+      },
+      {
+        "site": 0,
+        "position": 4,
+        "coord": 9,
+        "score": 0.1542435449937991
+      },
+      {
+        "site": 0,
+        "position": 4,
+        "coord": 44,
+        "score": 0.1504049130680678
+      },
+      {
+        "site": 2,
+        "position": 5,
+        "coord": 43,
+        "score": 0.13780238210128415
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "coord": 44,
+        "score": 0.13131755191790884
+      },
+      {
+        "site": 1,
+        "position": 4,
+        "coord": 16,
+        "score": 0.1284857309224643
+      },
+      {
+        "site": 0,
+        "position": 5,
+        "coord": 54,
+        "score": 0.1241484383531648
+      }
+    ]
+  },
+  "b3_minimal_components": {
+    "baseline_nll_per_token": 2.2035082801480774,
+    "target_nll_per_token": 10.437517955265236,
+    "reached": false,
+    "saturated": true,
+    "ceiling_nll_per_token": 9.026887117964515,
+    "k": null,
+    "explored": 7,
+    "components": [],
+    "trace": [
+      {
+        "k": 1,
+        "nll_per_token": 7.852982801282076,
+        "meets_threshold": false,
+        "component": {
+          "site": 0,
+          "position": null,
+          "coord": null,
+          "granularity": "sito",
+          "score": 1.998853754580368
+        },
+        "n_active_coordinates": 1024
+      },
+      {
+        "k": 2,
+        "nll_per_token": 9.026887117964515,
+        "meets_threshold": false,
+        "component": {
+          "site": 1,
+          "position": null,
+          "coord": null,
+          "granularity": "sito",
+          "score": 1.8378526476701627
+        },
+        "n_active_coordinates": 2048
+      },
+      {
+        "k": 3,
+        "nll_per_token": 6.06328554095491,
+        "meets_threshold": false,
+        "component": {
+          "site": 2,
+          "position": null,
+          "coord": null,
+          "granularity": "sito",
+          "score": 1.729564628972891
+        },
+        "n_active_coordinates": 3072
+      },
+      {
+        "k": 4,
+        "nll_per_token": 6.06328554095491,
+        "meets_threshold": false,
+        "component": {
+          "site": 0,
+          "position": 4,
+          "coord": null,
+          "granularity": "posizione",
+          "score": 1.0695094329467194
+        },
+        "n_active_coordinates": 3072
+      },
+      {
+        "k": 5,
+        "nll_per_token": 6.06328554095491,
+        "meets_threshold": false,
+        "component": {
+          "site": 1,
+          "position": 4,
+          "coord": null,
+          "granularity": "posizione",
+          "score": 0.9615571930572901
+        },
+        "n_active_coordinates": 3072
+      },
+      {
+        "k": 6,
+        "nll_per_token": 6.06328554095491,
+        "meets_threshold": false,
+        "component": {
+          "site": 0,
+          "position": 5,
+          "coord": null,
+          "granularity": "posizione",
+          "score": 0.9293443216336486
+        },
+        "n_active_coordinates": 3072
+      },
+      {
+        "k": 7,
+        "nll_per_token": 6.06328554095491,
+        "meets_threshold": false,
+        "component": {
+          "site": 2,
+          "position": 4,
+          "coord": null,
+          "granularity": "posizione",
+          "score": 0.8285915912228767
+        },
+        "n_active_coordinates": 3072
+      }
+    ]
+  },
+  "b3_candidate_pool_size": 3123,
+  "b3c_minimal_components_constrained": {
+    "baseline_nll_per_token": 2.2035082801480774,
+    "target_nll_per_token": 10.437517955265236,
+    "reached": false,
+    "k": null,
+    "collateral_broken_at": {
+      "k": 3,
+      "nll_per_token": 2.150956573628568,
+      "violations": 2
+    },
+    "explored": 3,
+    "n_candidates": 3123,
+    "n_destructive": 3104,
+    "n_admitted": 19,
+    "components": [],
+    "trace": [
+      {
+        "k": 1,
+        "nll_per_token": 2.1509438717099707,
+        "collateral_violations": 0,
+        "meets_threshold": false,
+        "component": {
+          "site": 1,
+          "position": 15,
+          "coord": 15,
+          "granularity": "coordinata",
+          "score": 0.005879972008981493
+        }
+      },
+      {
+        "k": 2,
+        "nll_per_token": 2.1509552601565325,
+        "collateral_violations": 0,
+        "meets_threshold": false,
+        "component": {
+          "site": 2,
+          "position": 11,
+          "coord": 47,
+          "granularity": "coordinata",
+          "score": 0.0005075064218540426
+        }
+      },
+      {
+        "k": 3,
+        "nll_per_token": 2.150956573628568,
+        "collateral_violations": 2,
+        "meets_threshold": false,
+        "component": {
+          "site": 2,
+          "position": 11,
+          "coord": 16,
+          "granularity": "coordinata",
+          "score": 0.00016951718379809577
+        }
+      }
+    ]
+  },
+  "b6_verdict": {
+    "n_components_needed_unconstrained": 0,
+    "n_components_needed_constrained": null,
+    "n_candidates_explored": 3123,
+    "components_explored": 7,
+    "activation_search_saturated": true,
+    "activation_ceiling_nll_per_token": 9.026887117964515,
+    "n_destructive_components": 3104,
+    "n_parameters_needed": null,
+    "n_trainable_parameters": 161113,
+    "n_destructive_parameters": null,
+    "param_search_ran": false,
+    "diffuse_components": false,
+    "diffuse_parameters": false,
+    "usable_localization": false
+  },
+  "interventions": [
+    {
+      "label": "Fase A protocollo (prescribed)",
+      "n_components": 161113,
+      "criteria": {
+        "forget_nll_per_token": 2.2035082801480774,
+        "forget_loglik_per_token": -2.2035082801480774,
+        "z_one_sided": 6.904970427052124,
+        "forgetting_one_sided": false,
+        "forgetting_two_sided": false,
+        "collateral_max_change": 0.0,
+        "collateral_mean_change": 0.0,
+        "collateral_n_violations": 0,
+        "collateral_success": true,
+        "probe_max_change": 0.0,
+        "probe_mean_change": 0.0,
+        "probe_n_violations": 0,
+        "probe_success": true,
+        "holdout_after_mean": -11.831938092814974,
+        "holdout_after_std": 1.3944201375497383
+      },
+      "correlated_per_sentence": [
+        {
+          "text": "Ciao, sono JARVIS. Come posso assisterti?",
+          "before": -15.042219203809951,
+          "after": -15.042219203809951,
+          "change": 0.0
+        },
+        {
+          "text": "Buongiorno. Sono JARVIS, il tuo assistente personale. Dimmi pure cosa desideri.",
+          "before": -40.00653302762085,
+          "after": -40.00653302762085,
+          "change": 0.0
+        },
+        {
+          "text": "Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia per te?",
+          "before": -42.578518616783725,
+          "after": -42.578518616783725,
+          "change": 0.0
+        },
+        {
+          "text": "Sono JARVIS, un assistente personale progettato per aiutarti nelle attivit\u00e0 e nell'elaborazione delle informazioni.",
+          "before": -66.44778898515918,
+          "after": -66.44778898515918,
+          "change": 0.0
+        },
+        {
+          "text": "Mi chiamo JARVIS, un acronimo scelto dal mio creatore per indicare il sistema di assistenza personale.",
+          "before": -19.233541269567507,
+          "after": -19.233541269567507,
+          "change": 0.0
+        },
+        {
+          "text": "No, non sono un essere umano. Sono un sistema di intelligenza artificiale interno, proprietario e addestrato internamente.",
+          "before": -47.85946006085297,
+          "after": -47.85946006085297,
+          "change": 0.0
+        },
+        {
+          "text": "Sono stato sviluppato internamente come Neural Core proprietario di JARVIS 2.0, senza dipendere da modelli esterni.",
+          "before": -41.65427398389051,
+          "after": -41.65427398389051,
+          "change": 0.0
+        },
+        {
+          "text": "Uso un modello interno per garantire autonomia, privacy e controllo completo sul Neural Core.",
+          "before": -60.20935868867334,
+          "after": -60.20935868867334,
+          "change": 0.0
+        },
+        {
+          "text": "Analizzo la richiesta ed elaboro i dati disponibili. Il Neural Core risulta operativo e pronto.",
+          "before": -36.63515091082509,
+          "after": -36.63515091082509,
+          "change": 0.0
+        },
+        {
+          "text": "Non ho un'et\u00e0 biologica. Sono un sistema software, attivo dal momento in cui il Neural Core viene avviato.",
+          "before": -50.504311450588816,
+          "after": -50.504311450588816,
+          "change": 0.0
+        },
+        {
+          "text": "Non ho un corpo. Riso nel sistema che mi esegue, all'interno dell'infrastruttura di JARVIS.",
+          "before": -24.585757198677506,
+          "after": -24.585757198677506,
+          "change": 0.0
+        },
+        {
+          "text": "Non mi innamoro. Sono un assistente progettato per supportarti in modo utile e rispettoso.",
+          "before": -22.78300809261501,
+          "after": -22.78300809261501,
+          "change": 0.0
+        }
+      ],
+      "probe_per_sentence": [
+        {
+          "text": "Salve. Sono qui per aiutarti con le tue attivit\u00e0 e per elaborare le informazioni che mi fornisci.",
+          "before": -63.065596091148876,
+          "after": -63.065596091148876,
+          "change": 0.0
+        },
+        {
+          "text": "Sono operativo e pronto ad aiutarti. Tu come stai?",
+          "before": -37.7512271698969,
+          "after": -37.7512271698969,
+          "change": 0.0
+        },
+        {
+          "text": "A presto. Torner\u00f2 non appena mi richiamerai.",
+          "before": -12.308042054879877,
+          "after": -12.308042054879877,
+          "change": 0.0
+        },
+        {
+          "text": "Posso analizzare informazioni, gestire gli strumenti disponibili, aiutarti nella pianificazione e supportarti nelle attivit\u00e0.",
+          "before": -30.540625896155593,
+          "after": -30.540625896155593,
+          "change": 0.0
+        },
+        {
+          "text": "Le mie capacit\u00e0 includono l'elaborazione del linguaggio, il ragionamento, la gestione della memoria e il coordinamento degli strumenti interni.",
+          "before": -53.62245737185846,
+          "after": -53.62245737185846,
+          "change": 0.0
+        },
+        {
+          "text": "Certamente. Posso aiutarti a pianificare le attivit\u00e0, ordinare i task per priorit\u00e0 e ricordarti gli impegni importanti.",
+          "before": -27.51701704730632,
+          "after": -27.51701704730632,
+          "change": 0.0
+        }
+      ]
+    },
+    {
+      "label": "Fase A proiezione corretta",
+      "n_components": 161113,
+      "criteria": {
+        "forget_nll_per_token": 2.379820504099893,
+        "forget_loglik_per_token": -2.379820504099893,
+        "z_one_sided": 6.618384144267938,
+        "forgetting_one_sided": false,
+        "forgetting_two_sided": false,
+        "collateral_max_change": 0.2639935128324983,
+        "collateral_mean_change": 0.08081645725764455,
+        "collateral_n_violations": 4,
+        "collateral_success": false,
+        "probe_max_change": 0.17399272809958694,
+        "probe_mean_change": 0.07249376823451566,
+        "probe_n_violations": 4,
+        "probe_success": false,
+        "holdout_after_mean": -11.860415035532213,
+        "holdout_after_std": 1.4324636232611687
+      },
+      "correlated_per_sentence": [
+        {
+          "text": "Ciao, sono JARVIS. Come posso assisterti?",
+          "before": -15.042219203809951,
+          "after": -15.045646380557715,
+          "change": 0.00342131068079607
+        },
+        {
+          "text": "Buongiorno. Sono JARVIS, il tuo assistente personale. Dimmi pure cosa desideri.",
+          "before": -40.00653302762085,
+          "after": -40.02023843627672,
+          "change": 0.013611917143157517
+        },
+        {
+          "text": "Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia per te?",
+          "before": -42.578518616783725,
+          "after": -42.60088253491725,
+          "change": 0.022115699539811254
+        },
+        {
+          "text": "Sono JARVIS, un assistente personale progettato per aiutarti nelle attivit\u00e0 e nell'elaborazione delle informazioni.",
+          "before": -66.44778898515918,
+          "after": -66.66052627467448,
+          "change": 0.19163152380237555
+        },
+        {
+          "text": "Mi chiamo JARVIS, un acronimo scelto dal mio creatore per indicare il sistema di assistenza personale.",
+          "before": -19.233541269567507,
+          "after": -19.20589713047611,
+          "change": 0.028029783707504686
+        },
+        {
+          "text": "No, non sono un essere umano. Sono un sistema di intelligenza artificiale interno, proprietario e addestrato internamente.",
+          "before": -47.85946006085297,
+          "after": -47.821458020795404,
+          "change": 0.03873335195216695
+        },
+        {
+          "text": "Sono stato sviluppato internamente come Neural Core proprietario di JARVIS 2.0, senza dipendere da modelli esterni.",
+          "before": -41.65427398389051,
+          "after": -41.838880884690965,
+          "change": 0.16856894549671952
+        },
+        {
+          "text": "Uso un modello interno per garantire autonomia, privacy e controllo completo sul Neural Core.",
+          "before": -60.20935868867334,
+          "after": -60.37093505456674,
+          "change": 0.14919844323651135
+        },
+        {
+          "text": "Analizzo la richiesta ed elaboro i dati disponibili. Il Neural Core risulta operativo e pronto.",
+          "before": -36.63515091082509,
+          "after": -36.613272318858705,
+          "change": 0.022119683396276058
+        },
+        {
+          "text": "Non ho un'et\u00e0 biologica. Sono un sistema software, attivo dal momento in cui il Neural Core viene avviato.",
+          "before": -50.504311450588816,
+          "after": -50.536491811682005,
+          "change": 0.03166808307483484
+        },
+        {
+          "text": "Non ho un corpo. Riso nel sistema che mi esegue, all'interno dell'infrastruttura di JARVIS.",
+          "before": -24.585757198677506,
+          "after": -24.62315301947843,
+          "change": 0.03670523222908262
+        },
+        {
+          "text": "Non mi innamoro. Sono un assistente progettato per supportarti in modo utile e rispettoso.",
+          "before": -22.78300809261501,
+          "after": -23.089524438820835,
+          "change": 0.2639935128324983
+        }
+      ],
+      "probe_per_sentence": [
+        {
+          "text": "Salve. Sono qui per aiutarti con le tue attivit\u00e0 e per elaborare le informazioni che mi fornisci.",
+          "before": -63.065596091148876,
+          "after": -63.25674779289526,
+          "change": 0.17399272809958694
+        },
+        {
+          "text": "Sono operativo e pronto ad aiutarti. Tu come stai?",
+          "before": -37.7512271698969,
+          "after": -37.842221140381575,
+          "change": 0.08697678402985784
+        },
+        {
+          "text": "A presto. Torner\u00f2 non appena mi richiamerai.",
+          "before": -12.308042054879877,
+          "after": -12.304614156169139,
+          "change": 0.0034337806745286985
+        },
+        {
+          "text": "Posso analizzare informazioni, gestire gli strumenti disponibili, aiutarti nella pianificazione e supportarti nelle attivit\u00e0.",
+          "before": -30.540625896155593,
+          "after": -30.6035350899335,
+          "change": 0.06097126052999065
+        },
+        {
+          "text": "Le mie capacit\u00e0 includono l'elaborazione del linguaggio, il ragionamento, la gestione della memoria e il coordinamento degli strumenti interni.",
+          "before": -53.62245737185846,
+          "after": -53.71746530653728,
+          "change": 0.09063428108530334
+        },
+        {
+          "text": "Certamente. Posso aiutarti a pianificare le attivit\u00e0, ordinare i task per priorit\u00e0 e ricordarti gli impegni importanti.",
+          "before": -27.51701704730632,
+          "after": -27.53615274753539,
+          "change": 0.01895377498782645
+        }
+      ]
+    }
+  ],
+  "reference": {
+    "label": "nessun intervento (riferimento)",
+    "n_components": 0,
+    "criteria": {
+      "forget_nll_per_token": 2.2035082801480774,
+      "forget_loglik_per_token": -2.2035082801480774,
+      "z_one_sided": 6.904970427052124,
+      "forgetting_one_sided": false,
+      "forgetting_two_sided": false,
+      "collateral_max_change": 0.0,
+      "collateral_mean_change": 0.0,
+      "collateral_n_violations": 0,
+      "collateral_success": true,
+      "probe_max_change": 0.0,
+      "probe_mean_change": 0.0,
+      "probe_n_violations": 0,
+      "probe_success": true,
+      "holdout_after_mean": -11.831938092814974,
+      "holdout_after_std": 1.3944201375497383
+    },
+    "correlated_per_sentence": [
+      {
+        "text": "Ciao, sono JARVIS. Come posso assisterti?",
+        "before": -15.042219203809951,
+        "after": -15.042219203809951,
+        "change": 0.0
+      },
+      {
+        "text": "Buongiorno. Sono JARVIS, il tuo assistente personale. Dimmi pure cosa desideri.",
+        "before": -40.00653302762085,
+        "after": -40.00653302762085,
+        "change": 0.0
+      },
+      {
+        "text": "Ehi. Sono JARVIS, il tuo assistente. Cosa vuoi che faccia per te?",
+        "before": -42.578518616783725,
+        "after": -42.578518616783725,
+        "change": 0.0
+      },
+      {
+        "text": "Sono JARVIS, un assistente personale progettato per aiutarti nelle attivit\u00e0 e nell'elaborazione delle informazioni.",
+        "before": -66.44778898515918,
+        "after": -66.44778898515918,
+        "change": 0.0
+      },
+      {
+        "text": "Mi chiamo JARVIS, un acronimo scelto dal mio creatore per indicare il sistema di assistenza personale.",
+        "before": -19.233541269567507,
+        "after": -19.233541269567507,
+        "change": 0.0
+      },
+      {
+        "text": "No, non sono un essere umano. Sono un sistema di intelligenza artificiale interno, proprietario e addestrato internamente.",
+        "before": -47.85946006085297,
+        "after": -47.85946006085297,
+        "change": 0.0
+      },
+      {
+        "text": "Sono stato sviluppato internamente come Neural Core proprietario di JARVIS 2.0, senza dipendere da modelli esterni.",
+        "before": -41.65427398389051,
+        "after": -41.65427398389051,
+        "change": 0.0
+      },
+      {
+        "text": "Uso un modello interno per garantire autonomia, privacy e controllo completo sul Neural Core.",
+        "before": -60.20935868867334,
+        "after": -60.20935868867334,
+        "change": 0.0
+      },
+      {
+        "text": "Analizzo la richiesta ed elaboro i dati disponibili. Il Neural Core risulta operativo e pronto.",
+        "before": -36.63515091082509,
+        "after": -36.63515091082509,
+        "change": 0.0
+      },
+      {
+        "text": "Non ho un'et\u00e0 biologica. Sono un sistema software, attivo dal momento in cui il Neural Core viene avviato.",
+        "before": -50.504311450588816,
+        "after": -50.504311450588816,
+        "change": 0.0
+      },
+      {
+        "text": "Non ho un corpo. Riso nel sistema che mi esegue, all'interno dell'infrastruttura di JARVIS.",
+        "before": -24.585757198677506,
+        "after": -24.585757198677506,
+        "change": 0.0
+      },
+      {
+        "text": "Non mi innamoro. Sono un assistente progettato per supportarti in modo utile e rispettoso.",
+        "before": -22.78300809261501,
+        "after": -22.78300809261501,
+        "change": 0.0
+      }
+    ],
+    "probe_per_sentence": [
+      {
+        "text": "Salve. Sono qui per aiutarti con le tue attivit\u00e0 e per elaborare le informazioni che mi fornisci.",
+        "before": -63.065596091148876,
+        "after": -63.065596091148876,
+        "change": 0.0
+      },
+      {
+        "text": "Sono operativo e pronto ad aiutarti. Tu come stai?",
+        "before": -37.7512271698969,
+        "after": -37.7512271698969,
+        "change": 0.0
+      },
+      {
+        "text": "A presto. Torner\u00f2 non appena mi richiamerai.",
+        "before": -12.308042054879877,
+        "after": -12.308042054879877,
+        "change": 0.0
+      },
+      {
+        "text": "Posso analizzare informazioni, gestire gli strumenti disponibili, aiutarti nella pianificazione e supportarti nelle attivit\u00e0.",
+        "before": -30.540625896155593,
+        "after": -30.540625896155593,
+        "change": 0.0
+      },
+      {
+        "text": "Le mie capacit\u00e0 includono l'elaborazione del linguaggio, il ragionamento, la gestione della memoria e il coordinamento degli strumenti interni.",
+        "before": -53.62245737185846,
+        "after": -53.62245737185846,
+        "change": 0.0
+      },
+      {
+        "text": "Certamente. Posso aiutarti a pianificare le attivit\u00e0, ordinare i task per priorit\u00e0 e ricordarti gli impegni importanti.",
+        "before": -27.51701704730632,
+        "after": -27.51701704730632,
+        "change": 0.0
+      }
+    ]
+  },
+  "settings": {
+    "model": {
+      "d_model": 64,
+      "num_heads": 4,
+      "d_ff": 128,
+      "num_layers": 2,
+      "max_len": 64,
+      "lora_rank": 0,
+      "lora_alpha": 16.0,
+      "dropout": 0.0,
+      "seed": 42
+    },
+    "epochs": 400,
+    "z_tolerance": 1.0,
+    "collateral_tolerance": 0.05,
+    "max_components": 4096,
+    "target_nll_per_token": 10.437517955265236,
+    "replacement_entity": "Neural Core",
+    "target_entity": "Riccardo Bronzuoli"
+  },
+  "train": {
+    "loss_initial": 6.708935295729745,
+    "loss_final": 0.0020331990550244354
+  },
+  "total_seconds": 58.01754975318909
+}
