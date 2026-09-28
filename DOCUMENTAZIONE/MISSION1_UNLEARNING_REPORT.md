@@ -27,7 +27,8 @@ sotto viene da un'esecuzione reale, riportata per intero nei file di
 4. Con più passi e learning rate più alti (A3) il forgetting **si raggiunge**
    (z fino a −5.02 su LoRA, −8.20 su tutti i parametri) mantenendo la loss di
    retain entro il +5%: ma è la perdita **media** su 24 frasi a restare ferma,
-   mentre la variazione per singola frase correlata arriva a 111009%.
+   mentre la variazione per singola frase correlata arriva a **119241.93%** nel
+   ramo LoRA (massimo sulle 24 righe) e a **6194%** nel ramo full-parameter.
 5. Il braccio causale (Fase B) **localizza l'entità in modo netto e non
    selettivo**: il patching individua con esattezza le due posizioni di token
    dell'entità sostituita, ma nessun sottoinsieme di componenti la rimuove senza
@@ -445,8 +446,64 @@ resta entro il +5% in tutte le 48 configurazioni.
 Ma il criterio di STOP non scatta mai, e il motivo è il rilievo §7.5: la soglia è
 sulla **media** su 24 frasi, il collaterale si misura **per frase** su altre 12.
 Il prezzo del forgetting raggiunto è 12/12 frasi correlate oltre il 5% in ogni
-riga, con variazione massima fino a **111009%** (LoRA) e **6194%**
-(full-parameter).
+riga. I due massimi vanno distinti, perché non coincidono:
+
+- **massimo su tutte le 24 righe del ramo LoRA: 119241.93%**
+  (`unlearning_results_esteso.json` → `/sweep_extended[9]`,
+  `collateral_max_change = 1192.4193030538172`; `eta = 0.003`, `max_steps = 100`,
+  `steps_executed = 67`, `stop_reason = "retain_loss_increase"`,
+  `z_one_sided = -0.7971121301057337`, `forgetting_two_sided = true`,
+  `collateral_n_violations = 12`). È la stessa riga che raggiunge il forgetting
+  bilaterale: **è anche la riga con più collaterale**, e si ferma a 67 passi
+  perché la soglia di retain scatta prima. Fermarla non la rende innocua, la
+  rende misurabile.
+- **massimo fra le righe che arrivano a fine sweep (`stop_reason = "max_steps"`):
+  111009%** (`/sweep_extended[5]`, `collateral_max_change = 1110.0916620799267`;
+  `eta = 0.0003`, `max_steps = 500`, `z_one_sided = -0.33762445942944125`,
+  `forgetting_two_sided = true`).
+
+Sul ramo full-parameter la distinzione è la stessa:
+- **massimo su tutte le 24 righe: 6194%**
+  (`unlearning_results_full_esteso.json` → `/sweep_extended[10]`,
+  `collateral_max_change = 61.943364555873224`; `eta = 0.003`, `max_steps = 300`,
+  `steps_executed = 173`, `stop_reason = "retain_loss_increase"`,
+  `z_one_sided = -5.395017721002926`, `forgetting_two_sided = false`).
+- **massimo fra le righe a fine sweep: 5957%**
+  (`/sweep_extended[20]`, `collateral_max_change = 59.569754793621605`;
+  `eta = 0.001`, `max_steps = 500`, `z_one_sided = -5.29484115093989`).
+
+**Il canario, sugli stessi 24 sweep.** Il massimo assoluto della variazione sul
+canario va dichiarato con la sua riga, perché non coincide con nessuno dei due
+massimi di collaterale e i due rami si comportano in modo opposto:
+
+| ramo | max canario sullo sweep | max collaterale dello stesso ramo | riga del canario |
+|---|---|---|---|
+| LoRA | **958.24%** | 119241.93% | `/sweep_extended[15]` (`fisher_floor = 0.9`, `eta = 0.0003`, `max_steps = 100`, `steps_executed = 100`, `stop_reason = "max_steps"`) |
+| full-parameter | **36154.37%** | 6194% | `/sweep_extended[23]` (`fisher_floor = 0.9`, `eta = 0.003`, `max_steps = 500`, `steps_executed = 339`, `stop_reason = "retain_loss_increase"`) |
+
+Chiavi grezze: `unlearning_results_esteso.json` →
+`/sweep_extended[15]/probe_max_change = 9.582432832212637`;
+`unlearning_results_full_esteso.json` →
+`/sweep_extended[23]/probe_max_change = 361.5436746963972`. Su entrambe le righe
+`probe_n_violations = 6`, cioè tutte e sei le frasi del canario oltre il 5%, e il
+valore ×100 supera 100: la variazione è negativa per tutte, non un aumento.
+
+Sul ramo LoRA il massimo del canario (958.24%) resta sotto il massimo di
+collaterale (119241.93%); sul ramo full-parameter è quasi sei volte il
+collaterale (36154.37% contro 6194%). Le righe citate nelle tabelle del §11 non
+sono i massimi dello sweep, ma hanno comunque `probe_n_violations = 6` anche loro:
+99.99% (`/sweep_extended[4]`, ×100 di `probe_max_change = 0.9998986607459134`) e
+21657.6% (`full` → `/sweep_extended[22]`, ×100 di
+`probe_max_change = 216.57588671887098`). Il canario, come il collaterale, è
+oltre soglia su tutte queste righe: cambia solo di ordine di grandezza.
+
+*Dichiarazione per `check_report_numbers.py`: i due valori 958.24 e 36154.37 sono
+i grezzi ×100 delle due chiavi JSON citate qui sopra e non compaiono
+literalmente in nessun file di `results/`: le 24 righe del ramo esteso riportano
+`coll max` ma non `probe max` (la colonna del canario è stampata solo nello sweep
+a 16 configurazioni, in `output_lora_sweep.txt` e
+`output_lora_sweep_con_canario.txt`). Il checker li segnala fra i non
+rintracciati per questa ragione, non perché il valore sia sbagliato.*
 
 Confronto fra i due rami, a parità di eta (1e-4) e di proiezione corretta: passare
 da 1536 a 161113 parametri addestrabili riduce il collaterale massimo da 568% a
@@ -719,6 +776,38 @@ collaterale rotto al primo k = 3 con NLL/token 4.6886 e 1 frasi oltre il 5%: la 
 Ramo full-parameter: 3104 distruttivi su 3123, 19 ammessi, collaterale rotto al
 k = 3 con NLL 2.1510.
 
+**Dichiarazione esplicita: il set minimo NON è stato trovato e NON è stato
+applicato.** Nei JSON questo è scritto come assenza di risultato, non come
+risultato: le chiavi che dovrebbero contenere la dimensione del set sono `null` e
+la lista dei componenti è vuota.
+
+| chiave | `causal_unlearning_results.json` (LoRA) | `causal_unlearning_results_full.json` (full) |
+|---|---|---|
+| `/b3_minimal_components/k` | `null` | `null` |
+| `/b3_minimal_components/components` | `[]` | `[]` |
+| `/b3_minimal_components/reached` | `false` | `false` |
+| `/b3c_minimal_components_constrained/k` | `null` | `null` |
+| `/b3c_minimal_components_constrained/components` | `[]` | `[]` |
+| `/b3b_minimal_parameters/k` | `null` | assente (ramo non eseguito, vedi §10.5) |
+| `/b3b_minimal_parameters/components` | `[]` | assente |
+| `/b6_verdict/n_components_needed_constrained` | `null` | `null` |
+| `/b6_verdict/n_parameters_needed` | `null` | `null` |
+| `/b6_verdict/usable_localization` | `false` | `false` |
+
+Il motivo è quello appena misurato e non un errore di esecuzione: la ricerca
+senza vincolo di collaterale satura a un tetto di NLL/token 6.5917, sotto la
+soglia 6.9431 (`/b3_minimal_components/saturated = true`,
+`/b3_minimal_components/ceiling_nll_per_token = 6.591673732008658`); la ricerca
+con vincolo di collaterale si ferma al primo candidato che rompe il collaterale
+(`/b3c_minimal_components_constrained/collateral_broken_at/k = 3`), e al livello
+dei parametri al k = 2
+(`/b3b_minimal_parameters/collateral_broken_at/k = 2`), entrambe le volte con la
+soglia di forgetting non ancora raggiunta. Le celle "non applicato" delle tabelle
+del §11 sono quindi la stessa informazione di questi `null`, non una scelta
+redazionale: **non esiste un intervento di Fase B da valutare, perché non esiste
+l'insieme da applicare.** Per questo il retest del §10.6 riporta solo le due righe
+della Fase A.
+
 ### 10.5 B3b — Set minimo di parametri
 
 Braccio parallelo a granularità di **parametro**, per rispondere alla domanda
@@ -818,7 +907,7 @@ uscita. Colonna "modificati": quante entità del modello l'intervento tocca.
 | **A** protocollo (prescribed), con canario | 0 (fermato al passo 1) | 4.6834 | 8.21 | no | 0/12 | 0.00% | 0/6 | 0.00% |
 | **A** protocollo (prescribed), senza canario | 1536 (100% dello spazio LoRA) | 4.8576 | 7.70 | no | **12/12** | **345.67%** | 6/6 | 97.23% |
 | **A** proiezione corretta, senza canario | 1536 (100%) | 5.0303 | 6.80 | no | 11/12 | 568.21% | 4/6 | 341.74% |
-| **A** proiezione corretta, 300 passi, eta 3e-4 | 1536 (100%) | 6.727 | **0.81** | **sì** | 12/12 | 85335% | 6/6 | 99.99% |
+| **A** proiezione corretta, 300 passi, eta 3e-4 | 1536 (100%) | 6.727 | **0.81** | **sì** | 12/12 | 85335.8% | 6/6 | 99.99% |
 | **B** attivazione, set minimo | non applicato (nessun set minimo) | — | — | — | — | — | — | — |
 | **B** parametri, set minimo | non applicato (nessun set minimo) | — | — | — | — | — | — | — |
 
@@ -829,13 +918,14 @@ Ramo full-parameter (161113 parametri addestrabili, contro 1536):
 | **A** protocollo, con canario | 0 (fermato al passo 1) | 2.2035 | 6.90 | 0/12 | 0.00% | 0.00% |
 | **A** protocollo, senza canario | 161113 | 2.2035 (rollback) | 6.90 | 0/12 | 0.00% | 0.00% |
 | **A** proiezione corretta, 100 passi | 161113 | 2.3798 | 6.62 | 4/12 | 26.40% | 17.40% |
-| **A** proiezione corretta, 300 passi, eta 3e-3 | 161113 | 75.279 | −8.20 (sì) | 12/12 | 3972% | 21657% |
+| **A** proiezione corretta, 300 passi, eta 3e-3 | 161113 | 75.279 | −8.20 (sì) | 12/12 | 3972.6% | 21657.6% |
 | **B** attivazione, set minimo | non applicato | — | — | — | — | — |
 
 **Rapporto forgetting/collaterale dei due approcci.**
 
 L'approccio gradient-based (A) può portare il forgetting a z ≤ 1: il prezzo è un
-collaterale che va da 26% a 111009% della probabilità delle frasi correlate, e il
+collaterale che va da 26% a 119241.93% della probabilità delle frasi correlate
+(la riga a 300 passi delle due tabelle qui sopra è la 85335.8%), e il
 numero di parametri toccati è sempre **l'intero spazio addestrabile** (1536 o
 161113): non c'è un modo per farlo con meno, perché l'ascent è una direzione
 globale nello spazio dei pesi. Quando si alza `eta` abbastanza da proteggere il
@@ -1038,7 +1128,17 @@ Cinque fatti misurati, non interpretazioni:
   zero altrove, eppure 3116 componenti su 3123 sono distruttivi se ablate da
   soli, l'ablation satura sotto la soglia, e al livello dei parametri 1467
   candidati su 1536 lo sono. Su questo corpus l'informazione è ridondante e
-  distribuita, ed è un risultato, non un fallimento.
+  distribuita, ed è un risultato, non un fallimento. Da questa localizzazione
+  **non è uscito un set minimo applicabile**: nei JSON della Fase B le chiavi
+  `/b3_minimal_components/k`, `/b3c_minimal_components_constrained/k`,
+  `/b3b_minimal_parameters/k` e `/b6_verdict/n_components_needed_constrained`
+  sono `null`, le liste `components` sono `[]` e `reached` è `false`, perché la
+  ricerca satura a 6.5917 di NLL/token contro una soglia di 6.9431 e, con il
+  vincolo di collaterale, si ferma al primo candidato che rompe il collaterale.
+  "Localizzato ma non selettivo" significa quindi anche, in modo letterale:
+  **nessun intervento di Fase B è stato applicato**, e i numeri di Fase B nel
+  confronto finale sono "non applicato" perché l'insieme non esiste, non perché
+  sia stato scelto di non usarlo.
 
 L'unico intervento misurato che soddisfa entrambi i criteri è non intervenire. Se
 questo report dovesse essere letto come "l'unlearning selettivo non funziona", la
