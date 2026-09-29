@@ -1,0 +1,31 @@
+{
+  "checkpoint_paths": {
+    "25pct": "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/.kilo/worktrees/protezione-per-frase-vs-protezione-aggregata-geom/experiments/mission_retain_geometry/results/checkpoints/ckpt_full_s42_100ep.npz",
+    "50pct": "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/.kilo/worktrees/protezione-per-frase-vs-protezione-aggregata-geom/experiments/mission_retain_geometry/results/checkpoints/ckpt_full_s42_200ep.npz",
+    "100pct": "/Users/riccardobronzuoli/Documents/Jarvis 2.0 completo/.kilo/worktrees/protezione-per-frase-vs-protezione-aggregata-geom/experiments/mission_retain_geometry/results/checkpoints/ckpt_full_s42_400ep.npz"
+  },
+  "history": [
+    {
+      "label": "25pct",
+      "epochs_done": 100,
+      "loss_first": 6.708935295729745,
+      "loss_last": 0.003408049605487355
+    },
+    {
+      "label": "50pct",
+      "epochs_done": 200,
+      "loss_first": 0.0027211290634147397,
+      "loss_last": 0.0017011819617406502
+    },
+    {
+      "label": "100pct",
+      "epochs_done": 400,
+      "loss_first": 0.002199531418996784,
+      "loss_last": 0.0020331990550244354
+    }
+  ],
+  "train_loss_initial": 6.708935295729745,
+  "train_loss_final": 0.0020331990550244354,
+  "n_trainable": 161113,
+  "train_seconds": 30.404350996017456
+}
