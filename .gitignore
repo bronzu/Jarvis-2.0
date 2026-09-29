@@ -150,6 +150,13 @@ experiments/phase4_continual_learning/__pycache__/
 !experiments/mission1_unlearning/
 !experiments/mission1_unlearning/**
 experiments/mission1_unlearning/__pycache__/
+# Stessa eccezione per la Missione di geometria del retain (protezione
+# per-frase vs protezione aggregata): i numeri del report e i test in
+# TESTS/test_retain_geometry.py importano i moduli in questa directory.
+!experiments/mission_retain_geometry/
+!experiments/mission_retain_geometry/**
+experiments/mission_retain_geometry/__pycache__/
+experiments/mission_retain_geometry/results/checkpoints/
 neural_core/data/*.pkl
 neural_core/data/*.json
 neural_core/data/*.txt
