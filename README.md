@@ -129,4 +129,3 @@ TESTS/: Complete suite of unit, integration, and continual learning tests (test_
 License
 
 Released under the proprietary/experimental open-source software license of the JARVIS 2.0 project. Refer to the LICENSE file in the root repository directory for full terms and conditions.
-Would you like me to expand on any specific section or help tailor this documentation further?
